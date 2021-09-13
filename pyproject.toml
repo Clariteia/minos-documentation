@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "minos_documentation"
+version = "0.0.1"
+description = "Minos' documentation"
+readme = "README.md"
+repository = "https://github.com/Clariteia/minos-documentation"
+homepage = "https://clariteia.com"
+authors = ["Clariteia Devs <devs@clariteia.com>"]
+license = "MIT"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+]
+keywords = [
+    "clariteia",
+    "minos",
+    "microservice",
+    "documentation",
+]
+include = [
+    "AUTHORS.md",
+    "HISTORY.md",
+    "LICENSE",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+sphinx-autodoc-typehints = "^1.12.0"
+sphinxcontrib-apidoc = "^0.3.0"
+sphinx-rtd-theme = "^0.5.2"
+m2r2 = "^0.2.7"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
