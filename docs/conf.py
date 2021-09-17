@@ -35,9 +35,6 @@ sys.path.insert(0, os.path.abspath('..'))
 import sphinx_rtd_theme
 
 extensions = [
-    "sphinxcontrib.apidoc",
-    'sphinx.ext.autodoc',
-    "sphinx_autodoc_typehints",
     "sphinx.ext.viewcode",
     "sphinx_rtd_theme",
     "m2r2",
@@ -55,7 +52,7 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = 'Minos Microservice Documentation'
+project = 'Minos Documentation'
 copyright = "2021, Clariteia"
 author = "Clariteia Devs"
 
@@ -145,7 +142,7 @@ latex_elements = {
 # [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'minos.tex',
-     'Minos Microservice Network Documentation',
+     'Minos Documentation',
      'Clariteia Devs', 'manual'),
 ]
 
@@ -155,7 +152,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'minos',
-     'Minos Microservice Network Documentation',
+     'Minos Documentation',
      [author], 1)
 ]
 
@@ -166,35 +163,9 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'minos',
-     'Minos Microservice Network Documentation',
+     'Minos Documentation',
      author,
      'minos',
      'One line description of project.',
      'Miscellaneous'),
 ]
-
-# "apidoc" extension
-apidoc_module_dir = "../minos"
-apidoc_output_dir = "api"
-apidoc_separate_modules = True
-autodoc_default_options = {
-    "inherited-members": True,
-    "special-members": "__init__",
-    "undoc-members": True,
-}
-
-apidoc_toc_file = False
-apidoc_module_first = True
-apidoc_extra_args = [
-    "--force",
-    "--implicit-namespaces",
-]
-
-# apidoc_excluded_paths = [
-#     '../minos/network/testing.py'
-# ]
-
-# "autodoc typehints" extension
-
-set_type_checking_flag = True
-typehints_fully_qualified = True

@@ -1,3 +1,5 @@
+# Ports and Adapters
+
 The ports and adapters architecture is a generalization of the traditional layers architecture meant to emphasize that,
 in modern systems, data sources might be requests initiators as well as receivers. Thus, it creates de `Port`
 abstraction, meaning any external system that meets a certain protocol. An `Adapter` is then a piece of software which

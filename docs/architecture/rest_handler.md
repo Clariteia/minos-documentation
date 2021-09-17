@@ -1,7 +1,9 @@
+# REST Handler
+
 Minos being a microservices' framework, it's very important to support a REST port to access it. Thus, Minos REST
 Handler keeps a REST server active for clients to consume its endpoints.
 
-# Configured through decorators
+## Configured through decorators
 
 REST endpoints' handlers are bind to endpoints using Python decorators, as in Flask, FastAPI and the like.
 
@@ -11,7 +13,7 @@ async def get_token(self, request: Request) -> Response:
     pass
 ```
 
-# Request parameter
+## Request parameter
 The `request` parameter is a Minos Request object that contains the data sent through the network.
 
 ```python
