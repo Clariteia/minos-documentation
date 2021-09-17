@@ -4,7 +4,7 @@
    :maxdepth: 2
 
    introduction
-   quickstart
+   quickstart/_toc
    architecture
 
 # Indices and tables
