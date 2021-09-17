@@ -5,7 +5,7 @@
 
    introduction
    quickstart/_toc
-   architecture
+   architecture/_toc
 
 # Indices and tables
 * :ref:`genindex`
