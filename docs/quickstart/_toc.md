@@ -7,3 +7,6 @@
    configuration
    aggregate
    service
+   saga
+   testing
+   deployment
