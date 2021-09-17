@@ -3,4 +3,7 @@
 .. toctree::
    :maxdepth: 2
 
-   environment
+   installation
+   configuration
+   aggregate
+   service
