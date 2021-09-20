@@ -21,12 +21,12 @@ from minos.networks import (
 )
 
 from ..aggregates import (
-    Vehicle,
+    Exam,
 )
 
 
-class VehicleCommandService(CommandService):
-    """Vehicle Command Service class"""
+class ExamCommandService(CommandService):
+    """Exam Command Service class"""
 ```
 
 ## Query Service
@@ -46,10 +46,10 @@ from minos.networks import (
 )
 
 from ..aggregates import (
-    Vehicle,
+    Exam,
 )
 
 
-class VehicleQueryService(QueryService):
-    """Vehicle Query Service class"""
+class ExamQueryService(QueryService):
+    """Exam Query Service class"""
 ```
