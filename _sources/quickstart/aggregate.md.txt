@@ -3,7 +3,7 @@
 ## Introduction
 TODO
 
-## Aggregate
+## Defining the `Exam` aggregate...
 TODO
 
 ```python
@@ -47,7 +47,7 @@ TODO
 ### Field Parsing
 TODO
 
-## Aggregate References
+## Defining the `Subject` reference...
 TODO
 
 ```python
@@ -60,7 +60,7 @@ class Subject(AggregateRef):
     title: str
 ```
 
-## Entities 
+## Defining the `Question` entity... 
 TODO
 
 ```python
@@ -74,7 +74,7 @@ class Question(Entity):
     choices: ...
 ```
 
-## Value Objects
+## Defining the `Choice` value object...
 TODO
 
 ```python
@@ -89,7 +89,7 @@ class Choice(ValueObject):
 ```
 
 
-## Full Picture
+## Full Picture...
 TODO
 
 ```python

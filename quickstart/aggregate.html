@@ -95,16 +95,16 @@
 <li class="toctree-l2"><a class="reference internal" href="setup.html">Setup</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Modeling the Domain: Aggregates</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#aggregate">Aggregate</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#defining-the-exam-aggregate">Defining the <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate…</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#storage-operations">Storage operations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#field-validation">Field Validation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#field-parsing">Field Parsing</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#aggregate-references">Aggregate References</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#entities">Entities</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#value-objects">Value Objects</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#full-picture">Full Picture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#defining-the-subject-reference">Defining the <code class="docutils literal notranslate"><span class="pre">Subject</span></code> reference…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#defining-the-question-entity">Defining the <code class="docutils literal notranslate"><span class="pre">Question</span></code> entity…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#defining-the-choice-value-object">Defining the <code class="docutils literal notranslate"><span class="pre">Choice</span></code> value object…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#full-picture">Full Picture…</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="command.html">Exposing Operations: Command Service</a></li>
@@ -191,8 +191,8 @@
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
 </div>
-<div class="section" id="aggregate">
-<h2>Aggregate<a class="headerlink" href="#aggregate" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="defining-the-exam-aggregate">
+<h2>Defining the <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate…<a class="headerlink" href="#defining-the-exam-aggregate" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">timedelta</span><span class="p">,</span>
@@ -243,8 +243,8 @@
 <p>TODO</p>
 </div>
 </div>
-<div class="section" id="aggregate-references">
-<h2>Aggregate References<a class="headerlink" href="#aggregate-references" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="defining-the-subject-reference">
+<h2>Defining the <code class="docutils literal notranslate"><span class="pre">Subject</span></code> reference…<a class="headerlink" href="#defining-the-subject-reference" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AggregateRef</span><span class="p">,</span>
@@ -256,8 +256,8 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="entities">
-<h2>Entities<a class="headerlink" href="#entities" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="defining-the-question-entity">
+<h2>Defining the <code class="docutils literal notranslate"><span class="pre">Question</span></code> entity…<a class="headerlink" href="#defining-the-question-entity" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Entity</span><span class="p">,</span>
@@ -270,8 +270,8 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="value-objects">
-<h2>Value Objects<a class="headerlink" href="#value-objects" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="defining-the-choice-value-object">
+<h2>Defining the <code class="docutils literal notranslate"><span class="pre">Choice</span></code> value object…<a class="headerlink" href="#defining-the-choice-value-object" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ValueObject</span><span class="p">,</span>
@@ -285,7 +285,7 @@
 </div>
 </div>
 <div class="section" id="full-picture">
-<h2>Full Picture<a class="headerlink" href="#full-picture" title="Permalink to this headline">¶</a></h2>
+<h2>Full Picture…<a class="headerlink" href="#full-picture" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/aggregates.py&quot;&quot;&quot;</span>
 
