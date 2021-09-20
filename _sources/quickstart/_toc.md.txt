@@ -5,7 +5,7 @@ This is the quickstart's guide for `minos`. The purpose of this tutorial is to p
 .. toctree::
    :maxdepth: 2
 
-   installation
+   setup
    aggregate
    service
    saga
