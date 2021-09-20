@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>REST Handler &mdash; Minos Documentation  documentation</title>
+  <title>Data Model &mdash; Minos Documentation  documentation</title>
   
 
   
@@ -41,8 +41,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API Reference" href="../api.html" />
-    <link rel="prev" title="Ports and Adapters" href="ports_and_adapters.html" />
+    <link rel="next" title="CQRS" href="cqrs.html" />
+    <link rel="prev" title="Architecture" href="_toc.html" />
     <link href="../_static/style.css" rel="stylesheet" type="text/css">
 
 </head>
@@ -93,14 +93,27 @@
 <li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/_toc.html">QuickStart</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="_toc.html">Architecture</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="data_model.html">Data Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cqrs.html">CQRS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ports_and_adapters.html">Ports and Adapters</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">REST Handler</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#configured-through-decorators">Configured through decorators</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#request-parameter">Request parameter</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Data Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#entity">Entity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#entityset">EntitySet</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#valueobject">ValueObject</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#valueobjectset">ValueObjectSet</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#aggregate">Aggregate</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#aggregateref">AggregateRef</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#modelref">ModelRef</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#migrations">Migrations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cqrs.html">CQRS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ports_and_adapters.html">Ports and Adapters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rest_handler.html">REST Handler</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
@@ -154,13 +167,13 @@
         
           <li><a href="_toc.html">Architecture</a> &raquo;</li>
         
-      <li>REST Handler</li>
+      <li>Data Model</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/architecture/rest_handler.md.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/architecture/data_model.md.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -173,25 +186,42 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="rest-handler">
-<h1>REST Handler<a class="headerlink" href="#rest-handler" title="Permalink to this headline">¶</a></h1>
-<p>Minos being a microservices’ framework, it’s very important to support a REST port to access it. Thus, Minos REST
-Handler keeps a REST server active for clients to consume its endpoints.</p>
-<div class="section" id="configured-through-decorators">
-<h2>Configured through decorators<a class="headerlink" href="#configured-through-decorators" title="Permalink to this headline">¶</a></h2>
-<p>REST endpoints’ handlers are bind to endpoints using Python decorators, as in Flask, FastAPI and the like.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;/login&quot;</span><span class="p">,</span> <span class="s2">&quot;GET&quot;</span><span class="p">)</span>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">get_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
-    <span class="k">pass</span>
-</pre></div>
+  <div class="section" id="data-model">
+<h1>Data Model<a class="headerlink" href="#data-model" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+</div>
+<div class="section" id="entity">
+<h2>Entity<a class="headerlink" href="#entity" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+<div class="section" id="entityset">
+<h3>EntitySet<a class="headerlink" href="#entityset" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
 </div>
 </div>
-<div class="section" id="request-parameter">
-<h2>Request parameter<a class="headerlink" href="#request-parameter" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">request</span></code> parameter is a Minos Request object that contains the data sent through the network.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
-<span class="n">username</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">]</span>
-</pre></div>
+<div class="section" id="valueobject">
+<h2>ValueObject<a class="headerlink" href="#valueobject" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+<div class="section" id="valueobjectset">
+<h3>ValueObjectSet<a class="headerlink" href="#valueobjectset" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
+</div>
+</div>
+<div class="section" id="aggregate">
+<h2>Aggregate<a class="headerlink" href="#aggregate" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+<div class="section" id="aggregateref">
+<h3>AggregateRef<a class="headerlink" href="#aggregateref" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
+</div>
+<div class="section" id="modelref">
+<h3>ModelRef<a class="headerlink" href="#modelref" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
+</div>
+<div class="section" id="migrations">
+<h3>Migrations<a class="headerlink" href="#migrations" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
 </div>
 </div>
 </div>
@@ -202,8 +232,8 @@ Handler keeps a REST server active for clients to consume its endpoints.</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="../api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="ports_and_adapters.html" class="btn btn-neutral float-left" title="Ports and Adapters" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cqrs.html" class="btn btn-neutral float-right" title="CQRS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="_toc.html" class="btn btn-neutral float-left" title="Architecture" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
