@@ -1,4 +1,4 @@
-# Domain Modeling
+# Modeling Domain: Aggregates
 
 ## Introduction
 TODO
