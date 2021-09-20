@@ -94,6 +94,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="_toc.html">QuickStart</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Installation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#modularity">Modularity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#package-managers">Package Managers</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#poetry">Poetry</a></li>
@@ -184,27 +185,83 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>Before starting to think in multiple microservices, distributed environments and so on, it’s easier and better to start by knowing what components are needed to build a microservice individually. For sake of simplicity, each microservice can be seen as one small monolithic system that provides as limited or specialized functionality. Then, each microservice will probably need to interact with a storage system, contain some kind of business logic and expose that functionality over an external API, to be used by external clients and another microservices.</p>
+<p>Before starting to think in multiple microservices, distributed environments and so on, it’s easier and better to start
+by knowing what components are needed to build a microservice individually. For sake of simplicity, each microservice
+can be seen as one small monolithic system that provides as limited or specialized functionality. Then, each
+microservice will probably need to interact with a storage system, contain some kind of business logic and expose that
+functionality over an external API, to be used by external clients and another microservices.</p>
+</div>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>To be able to provide all that environment functionalities, <code class="docutils literal notranslate"><span class="pre">minos</span></code> relies on external dedicated libraries. For example,
+to read or store data in postgres database <code class="docutils literal notranslate"><span class="pre">aiopg</span></code> is used, to publish or subscribe to kafka topics <code class="docutils literal notranslate"><span class="pre">aiokafka</span></code> is used
+and to expose a REST interface <code class="docutils literal notranslate"><span class="pre">aiohttp</span></code> is used. In any case, the <code class="docutils literal notranslate"><span class="pre">minos</span></code> philosophy is that the surrounding
+technologies must not be frozen to these and each of project must have its own ones so the list of supported databases
+and brokers will be increased in future <code class="docutils literal notranslate"><span class="pre">minos</span></code> releases.</p>
+<p>Another important thing to know is that <code class="docutils literal notranslate"><span class="pre">minos</span></code> relies on latest <code class="docutils literal notranslate"><span class="pre">Python</span></code> functionalities so the minimal required
+version is <code class="docutils literal notranslate"><span class="pre">3.9</span></code> or greater. One of the reasons are the use of <em>async</em> code together with <em>type hinted</em> code.</p>
+<p>Then, for this quickstart the following dependencies are needed:</p>
+<ul class="simple">
+<li><p><strong>Python</strong> &gt;= 3.9</p></li>
+<li><p><strong>Postgresql</strong> &gt;= 9.3</p></li>
+<li><p><strong>Kafka</strong> &gt;= 2.8</p></li>
+</ul>
+<p>In order to ease the quickstart process, here is a simple <code class="docutils literal notranslate"><span class="pre">docker-compose.yml</span></code> that provides the environment
+dependencies:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># docker-compose.yml</span>
+<span class="nt">version</span><span class="p">:</span> <span class="s">&quot;3.9&quot;</span>
+<span class="nt">services</span><span class="p">:</span>
+  <span class="nt">postgres</span><span class="p">:</span>
+    <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">postgres:latest</span>
+    <span class="nt">ports</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;5432:5432&quot;</span>
+    <span class="nt">environment</span><span class="p">:</span>
+      <span class="nt">POSTGRES_USER</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos</span>
+      <span class="nt">POSTGRES_PASSWORD</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">min0s</span>
+      <span class="nt">POSTGRES_DB</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">product_db</span>
+  <span class="nt">zookeeper</span><span class="p">:</span>
+    <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">wurstmeister/zookeeper:latest</span>
+    <span class="nt">ports</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;2181:2181&quot;</span>
+  <span class="nt">kafka</span><span class="p">:</span>
+    <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">wurstmeister/kafka:latest</span>
+    <span class="nt">ports</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;9092:9092&quot;</span>
+    <span class="nt">depends_on</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">zookeeper</span>
+    <span class="nt">environment</span><span class="p">:</span>
+      <span class="nt">KAFKA_ADVERTISED_HOST_NAME</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
+      <span class="nt">KAFKA_ZOOKEEPER_CONNECT</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">zookeeper:2181</span>
+      <span class="nt">KAFKA_DELETE_TOPIC_ENABLE</span><span class="p">:</span> <span class="s">&quot;true&quot;</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="modularity">
 <h2>Modularity<a class="headerlink" href="#modularity" title="Permalink to this headline">¶</a></h2>
-<p>To be able to provide all that environment functionalities, <code class="docutils literal notranslate"><span class="pre">minos</span></code> relies on external dedicated libraries. For example, to read or store data in postgres database <code class="docutils literal notranslate"><span class="pre">aiopg</span></code> is used, to publish or subscribe to kafka topics <code class="docutils literal notranslate"><span class="pre">aiokafka</span></code> is used and to expose a REST interface <code class="docutils literal notranslate"><span class="pre">aiohttp</span></code> is used. In any case, the <code class="docutils literal notranslate"><span class="pre">minos</span></code> philosophy is that the surrounding technologies must not be frozen to these and each of project must have its own ones so the list of supported databases and brokers will be increased in future <code class="docutils literal notranslate"><span class="pre">minos</span></code> releases.</p>
-<p>An important thing to know is that <code class="docutils literal notranslate"><span class="pre">minos</span></code> relies on latest <code class="docutils literal notranslate"><span class="pre">Python</span></code> functionalities so the minimal required version is <code class="docutils literal notranslate"><span class="pre">3.9</span></code> or greater. One of the reasons are the use of <em>async</em> code together with <em>type hinted</em> code.</p>
-<p>Another important detail about how the <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework is how it is packaged. Instead of providing all the framework as a single and big component, it relies on <code class="docutils literal notranslate"><span class="pre">Python</span></code> <a class="reference external" href="https://packaging.python.org/guides/packaging-namespace-packages/">namespaces</a> to provide a modular but organized way to install only the exact part of functionality that will be used. The main packages are the following ones:</p>
+<p>Another important detail about how the <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework is how it is packaged. Instead of providing all the framework
+as a single and big component, it relies
+on <code class="docutils literal notranslate"><span class="pre">Python</span></code> <a class="reference external" href="https://packaging.python.org/guides/packaging-namespace-packages/">namespaces</a> to provide a modular but
+organized way to install only the exact part of functionality that will be used. The main packages are the following
+ones:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://pypi.org/project/minos-microservice-common/">minos-microservice-common</a>: Contains the <code class="docutils literal notranslate"><span class="pre">minos.common</span></code> module.</p></li>
-<li><p><a class="reference external" href="https://pypi.org/project/minos-microservice-networks/">minos-microservice-networks</a>:  Contains the <code class="docutils literal notranslate"><span class="pre">minos.networks</span></code> module.</p></li>
+<li><p><a class="reference external" href="https://pypi.org/project/minos-microservice-networks/">minos-microservice-networks</a>:  Contains the <code class="docutils literal notranslate"><span class="pre">minos.networks</span></code>
+module.</p></li>
 <li><p><a class="reference external" href="https://pypi.org/project/minos-microservice-saga/">minos-microservice-saga</a>: Contains the <code class="docutils literal notranslate"><span class="pre">minos.saga</span></code> module.</p></li>
 <li><p><a class="reference external" href="https://pypi.org/project/minos-microservice-cqrs/">minos-microservice-cqrs</a>: Contains the <code class="docutils literal notranslate"><span class="pre">minos.cqrs</span></code> module.</p></li>
 </ul>
 </div>
 <div class="section" id="package-managers">
 <h2>Package Managers<a class="headerlink" href="#package-managers" title="Permalink to this headline">¶</a></h2>
-<p>Before starting a <code class="docutils literal notranslate"><span class="pre">Python</span></code> project, a package manager is needed to install and manage external dependencies. As it’s expected, <code class="docutils literal notranslate"><span class="pre">minos</span></code> is compatible with any of them, but the recommended one is <code class="docutils literal notranslate"><span class="pre">Poetry</span></code> as it provides simple but powerful functionalities.</p>
+<p>Before starting a <code class="docutils literal notranslate"><span class="pre">Python</span></code> project, a package manager is needed to install and manage external dependencies. As it’s
+expected, <code class="docutils literal notranslate"><span class="pre">minos</span></code> is compatible with any of them, but the recommended one is <code class="docutils literal notranslate"><span class="pre">Poetry</span></code> as it provides simple but powerful
+functionalities.</p>
 <div class="section" id="poetry">
 <h3>Poetry<a class="headerlink" href="#poetry" title="Permalink to this headline">¶</a></h3>
-<p>To install poetry, it’s recommended to follow its own guide, that can be found <a class="reference external" href="https://python-poetry.org/docs/">here</a>. After installing <code class="docutils literal notranslate"><span class="pre">poetry</span></code>, everything is ready to build the first microservice!</p>
-<p>The first step is to create the project (the project name can be whatever you want, but a <code class="docutils literal notranslate"><span class="pre">minos</span></code> microservice convention is to name it as <code class="docutils literal notranslate"><span class="pre">src</span></code>):</p>
+<p>To install poetry, it’s recommended to follow its own guide, that can be found <a class="reference external" href="https://python-poetry.org/docs/">here</a>.
+After installing <code class="docutils literal notranslate"><span class="pre">poetry</span></code>, everything is ready to build the first microservice!</p>
+<p>The first step is to create the project (the project name can be whatever you want, but a <code class="docutils literal notranslate"><span class="pre">minos</span></code> microservice
+convention is to name it as <code class="docutils literal notranslate"><span class="pre">src</span></code>):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry new product-microservice-example --name src
 </pre></div>
 </div>
