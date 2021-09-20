@@ -219,7 +219,7 @@ dependencies:</p>
     <span class="nt">environment</span><span class="p">:</span>
       <span class="nt">POSTGRES_USER</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos</span>
       <span class="nt">POSTGRES_PASSWORD</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">min0s</span>
-      <span class="nt">POSTGRES_DB</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">product_db</span>
+      <span class="nt">POSTGRES_DB</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">vehicle_db</span>
   <span class="nt">zookeeper</span><span class="p">:</span>
     <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">wurstmeister/zookeeper:latest</span>
     <span class="nt">ports</span><span class="p">:</span>
@@ -263,11 +263,11 @@ functionalities.</p>
 After installing <code class="docutils literal notranslate"><span class="pre">poetry</span></code>, everything is ready to build the first microservice!</p>
 <p>The first step is to create the project (the project name can be whatever you want, but a <code class="docutils literal notranslate"><span class="pre">minos</span></code> microservice
 convention is to name it as <code class="docutils literal notranslate"><span class="pre">src</span></code>):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry new product-microservice-example --name src
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry new vehicle-microservice-example --name src
 </pre></div>
 </div>
 <p>The project structure will be similar to:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>product-microservice-example
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vehicle-microservice-example
 ├── README.rst
 ├── pyproject.toml
 ├── src
@@ -295,8 +295,8 @@ convention is to name it as <code class="docutils literal notranslate"><span cla
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># config.yml</span>
 
 <span class="nt">service</span><span class="p">:</span>
-  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">product</span>
-  <span class="nt">aggregate</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.aggregates.Product</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">vehicle</span>
+  <span class="nt">aggregate</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.aggregates.Vehicle</span>
   <span class="nt">injections</span><span class="p">:</span>
     <span class="nt">postgresql_pool</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.common.PostgreSqlPool</span>
     <span class="nt">command_broker</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.CommandBroker</span>
@@ -323,7 +323,7 @@ convention is to name it as <code class="docutils literal notranslate"><span cla
   <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
   <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">9092</span>
   <span class="nt">queue</span><span class="p">:</span>
-    <span class="nt">database</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">product_db</span>
+    <span class="nt">database</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">vehicle_db</span>
     <span class="nt">user</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos</span>
     <span class="nt">password</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">min0s</span>
     <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
@@ -331,26 +331,26 @@ convention is to name it as <code class="docutils literal notranslate"><span cla
     <span class="nt">records</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1000</span>
     <span class="nt">retry</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
 <span class="nt">repository</span><span class="p">:</span>
-  <span class="nt">database</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">product_db</span>
+  <span class="nt">database</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">vehicle_db</span>
   <span class="nt">user</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos</span>
   <span class="nt">password</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">min0s</span>
   <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
   <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5432</span>
 <span class="nt">snapshot</span><span class="p">:</span>
-  <span class="nt">database</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">product_db</span>
+  <span class="nt">database</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">vehicle_db</span>
   <span class="nt">user</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos</span>
   <span class="nt">password</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">min0s</span>
   <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
   <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5432</span>
 <span class="nt">events</span><span class="p">:</span>
-  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.ProductQueryService</span>
+  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.VehicleQueryService</span>
 <span class="nt">queries</span><span class="p">:</span>
-  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.ProductQueryService</span>
+  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.VehicleQueryService</span>
 <span class="nt">commands</span><span class="p">:</span>
-  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.ProductCommandService</span>
+  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.VehicleCommandService</span>
 <span class="nt">saga</span><span class="p">:</span>
   <span class="nt">storage</span><span class="p">:</span>
-    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">./product.lmdb</span>
+    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">./vehicle.lmdb</span>
 <span class="nt">discovery</span><span class="p">:</span>
   <span class="nt">client</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.MinosDiscoveryClient</span>
   <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
