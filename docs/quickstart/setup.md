@@ -114,10 +114,34 @@ poetry add \
   minos-microservice-cqrs
 ```
 
-After that, every `minos` dependencies are ready to be used. Let's move to the configuration step!
+### PipEnv
+[TODO: Include pipenv guide.] 
 
+### Pip
+[TODO: Include pip guide.]
+
+After that, every `minos` dependencies are ready to use. Let's move to the configuration step!
 
 ## Configuration
+
+The configuration step is the last part of the microservice's setup, which is the process of defining the microservice's name, the classes to be responsible for specific framework's tasks and the location of credentials to interact with external resources like databases and brokers.
+
+As many parts of the configuration requires digging deeper into each of the components of the framework, here is provided a superficial description of the main ones.
+* `service.name`: The name of the microservice.
+* `service.aggregate`: The qualified `Python` path to the root aggregate.
+* `service.injections`: A mapping of instances to be injected around the framework to provide framework's functionality.
+* `service.services`: A set of background services whose main purpose that provide some framework's functionality. 
+* `rest`: Configuration of the rest's interface.
+* `broker`: Configuration of the broker's interface.
+* `repository`: Configuration of the repository database.
+* `snapshot`: Configuration of the snapshot database.
+* `events`: Configuration of the events service.
+* `queries`: Configuration of the queries service.
+* `commands`: Configuration of the commands service.
+* `saga`: Configuration of the saga manager.
+* `discovery`: Configuration of the discovery service.
+
+Here is a template for a `config.yml` file, which will be used by the `exam` microservice. 
 
 ```yaml
 # config.yml

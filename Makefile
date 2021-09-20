@@ -27,7 +27,6 @@ help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	rm -rf docs/api
 	poetry run $(MAKE) -C docs clean html
 
 servedocs: docs ## compile the docs watching for changes
