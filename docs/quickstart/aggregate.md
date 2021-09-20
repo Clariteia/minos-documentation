@@ -4,20 +4,39 @@
 
 TODO
 
-
 ```python
 """src/aggregates.py"""
-
-from typing import (
-    Optional,
-)
-from uuid import (
-    uuid4,
+from __future__ import (
+    annotations,
 )
 from minos.common import (
-    Aggregate
+    Aggregate,
+    ModelRef,
+    AggregateRef,
+    ValueObject,
+    ValueObjectSet,
+    EntitySet,
+    EntityObjectSet,
 )
 
-class Vehicle(Aggregate):
-    """Vehicle class."""
+
+class Exam(Aggregate):
+    subject: ModelRef[Subject]
+    questions: EntityObjectSet[Question]
+
+
+class Subject(AggregateRef):
+    title: str
+
+
+class Question(ValueObject):
+    title: str
+    choices: ValueObjectSet[Choice]
+
+
+class Choice(ValueObject):
+    text: str
+    correct: bool
+
+
 ```
