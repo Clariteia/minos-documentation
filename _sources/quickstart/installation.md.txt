@@ -22,7 +22,7 @@ version is `3.9` or greater. One of the reasons are the use of *async* code toge
 Then, for this quickstart the following dependencies are needed:
 
 * **Python** >= 3.9
-* **Postgresql** >= 9.3
+* **PostgreSQL** >= 9.3
 * **Kafka** >= 2.8
 
 In order to ease the quickstart process, here is a simple `docker-compose.yml` that provides the environment
@@ -30,6 +30,7 @@ dependencies:
 
 ```yaml
 # docker-compose.yml
+
 version: "3.9"
 services:
   postgres:

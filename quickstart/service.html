@@ -186,10 +186,71 @@
 <div class="section" id="command-service">
 <h2>Command Service<a class="headerlink" href="#command-service" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/commands.py&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CommandService</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Request</span><span class="p">,</span>
+    <span class="n">Response</span><span class="p">,</span>
+    <span class="n">enroute</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..aggregates</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Product</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ProductCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Product Command Service class&quot;&quot;&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;/products&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">)</span>
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;CreateProduct&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">create_product</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Create a product.</span>
+
+<span class="sd">        :param request: A request instance containing the information to build a product instance.</span>
+<span class="sd">        :return: A response containing the newly created product instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+
+        <span class="n">title</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;price&quot;</span><span class="p">]</span>
+
+        <span class="n">product</span> <span class="o">=</span> <span class="k">await</span> <span class="n">Product</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="query-service">
 <h2>Query Service<a class="headerlink" href="#query-service" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/queries.py&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">QueryService</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Request</span><span class="p">,</span>
+    <span class="n">Response</span><span class="p">,</span>
+    <span class="n">enroute</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..aggregates</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Product</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ProductQueryService</span><span class="p">(</span><span class="n">QueryService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Product Query Service class&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span>
+</pre></div>
+</div>
 </div>
 </div>
 
