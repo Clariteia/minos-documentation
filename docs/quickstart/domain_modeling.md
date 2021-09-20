@@ -1,11 +1,10 @@
 # Domain Modeling
 
 ## Introduction
-
 TODO
 
-
-## Aggregate structure and Storage operations
+## Aggregate
+TODO
 
 ```python
 from datetime import (
@@ -24,9 +23,31 @@ class Exam(Aggregate):
     questions: ...
 ```
 
+### Storage operations
+TODO
 
-## External Aggregate References
+#### Create
+TODO
 
+#### Update
+TODO
+
+#### Delete
+TODO
+
+#### Get
+TODO
+
+#### Find
+TODO
+
+### Field Validation
+TODO
+
+### Field Parsing
+TODO
+
+## Aggregate References
 TODO
 
 ```python
@@ -38,7 +59,6 @@ from minos.common import (
 class Subject(AggregateRef):
     title: str
 ```
-
 
 ## Entities 
 TODO
