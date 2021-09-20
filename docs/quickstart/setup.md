@@ -40,7 +40,7 @@ services:
     environment:
       POSTGRES_USER: minos
       POSTGRES_PASSWORD: min0s
-      POSTGRES_DB: product_db
+      POSTGRES_DB: vehicle_db
   zookeeper:
     image: wurstmeister/zookeeper:latest
     ports:
@@ -86,13 +86,13 @@ The first step is to create the project (the project name can be whatever you wa
 convention is to name it as `src`):
 
 ```bash
-poetry new product-microservice-example --name src
+poetry new vehicle-microservice-example --name src
 ```
 
 The project structure will be similar to:
 
 ```bash
-product-microservice-example
+vehicle-microservice-example
 ├── README.rst
 ├── pyproject.toml
 ├── src
@@ -123,8 +123,8 @@ After that, every `minos` dependencies are ready to be used. Let's move to the c
 # config.yml
 
 service:
-  name: product
-  aggregate: src.aggregates.Product
+  name: vehicle
+  aggregate: src.aggregates.Vehicle
   injections:
     postgresql_pool: minos.common.PostgreSqlPool
     command_broker: minos.networks.CommandBroker
@@ -151,7 +151,7 @@ broker:
   host: localhost
   port: 9092
   queue:
-    database: product_db
+    database: vehicle_db
     user: minos
     password: min0s
     host: localhost
@@ -159,26 +159,26 @@ broker:
     records: 1000
     retry: 2
 repository:
-  database: product_db
+  database: vehicle_db
   user: minos
   password: min0s
   host: localhost
   port: 5432
 snapshot:
-  database: product_db
+  database: vehicle_db
   user: minos
   password: min0s
   host: localhost
   port: 5432
 events:
-  service: src.ProductQueryService
+  service: src.VehicleQueryService
 queries:
-  service: src.ProductQueryService
+  service: src.VehicleQueryService
 commands:
-  service: src.ProductCommandService
+  service: src.VehicleCommandService
 saga:
   storage:
-    path: ./product.lmdb
+    path: ./vehicle.lmdb
 discovery:
   client: minos.networks.MinosDiscoveryClient
   host: localhost
