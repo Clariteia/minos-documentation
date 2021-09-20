@@ -98,6 +98,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#modularity">Modularity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#package-managers">Package Managers</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#poetry">Poetry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pipenv">PipEnv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pip">Pip</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#configuration">Configuration</a></li>
@@ -287,11 +289,37 @@ convention is to name it as <code class="docutils literal notranslate"><span cla
   minos-microservice-cqrs
 </pre></div>
 </div>
-<p>After that, every <code class="docutils literal notranslate"><span class="pre">minos</span></code> dependencies are ready to be used. Let’s move to the configuration step!</p>
+</div>
+<div class="section" id="pipenv">
+<h3>PipEnv<a class="headerlink" href="#pipenv" title="Permalink to this headline">¶</a></h3>
+<p>[TODO: Include pipenv guide.]</p>
+</div>
+<div class="section" id="pip">
+<h3>Pip<a class="headerlink" href="#pip" title="Permalink to this headline">¶</a></h3>
+<p>[TODO: Include pip guide.]</p>
+<p>After that, every <code class="docutils literal notranslate"><span class="pre">minos</span></code> dependencies are ready to use. Let’s move to the configuration step!</p>
 </div>
 </div>
 <div class="section" id="configuration">
 <h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>The configuration step is the last part of the microservice’s setup, which is the process of defining the microservice’s name, the classes to be responsible for specific framework’s tasks and the location of credentials to interact with external resources like databases and brokers.</p>
+<p>As many parts of the configuration requires digging deeper into each of the components of the framework, here is provided a superficial description of the main ones.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">service.name</span></code>: The name of the microservice.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">service.aggregate</span></code>: The qualified <code class="docutils literal notranslate"><span class="pre">Python</span></code> path to the root aggregate.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">service.injections</span></code>: A mapping of instances to be injected around the framework to provide framework’s functionality.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">service.services</span></code>: A set of background services whose main purpose that provide some framework’s functionality.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rest</span></code>: Configuration of the rest’s interface.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">broker</span></code>: Configuration of the broker’s interface.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">repository</span></code>: Configuration of the repository database.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">snapshot</span></code>: Configuration of the snapshot database.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">events</span></code>: Configuration of the events service.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">queries</span></code>: Configuration of the queries service.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">commands</span></code>: Configuration of the commands service.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">saga</span></code>: Configuration of the saga manager.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">discovery</span></code>: Configuration of the discovery service.</p></li>
+</ul>
+<p>Here is a template for a <code class="docutils literal notranslate"><span class="pre">config.yml</span></code> file, which will be used by the <code class="docutils literal notranslate"><span class="pre">exam</span></code> microservice.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># config.yml</span>
 
 <span class="nt">service</span><span class="p">:</span>
