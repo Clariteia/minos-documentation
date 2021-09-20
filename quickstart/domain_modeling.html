@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Aggregate &mdash; Minos Documentation  documentation</title>
+  <title>Domain Modeling &mdash; Minos Documentation  documentation</title>
   
 
   
@@ -93,8 +93,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="_toc.html">QuickStart</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="setup.html">Setup</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Aggregate</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Domain Modeling</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aggregate">Aggregate</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#storage-operations">Storage operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#field-validation">Field Validation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#field-parsing">Field Parsing</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#aggregate-references">Aggregate References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#entities">Entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#value-objects">Value Objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#full-picture">Full Picture</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="service.html">Service</a></li>
@@ -155,13 +165,13 @@
         
           <li><a href="_toc.html">QuickStart</a> &raquo;</li>
         
-      <li>Aggregate</li>
+      <li>Domain Modeling</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/quickstart/aggregate.md.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/quickstart/domain_modeling.md.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -174,15 +184,114 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="aggregate">
-<h1>Aggregate<a class="headerlink" href="#aggregate" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="domain-modeling">
+<h1>Domain Modeling<a class="headerlink" href="#domain-modeling" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
+</div>
+<div class="section" id="aggregate">
+<h2>Aggregate<a class="headerlink" href="#aggregate" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">timedelta</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Aggregate</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Exam</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">duration</span><span class="p">:</span> <span class="n">timedelta</span>
+    <span class="n">subject</span><span class="p">:</span> <span class="o">...</span>
+    <span class="n">questions</span><span class="p">:</span> <span class="o">...</span>
+</pre></div>
+</div>
+<div class="section" id="storage-operations">
+<h3>Storage operations<a class="headerlink" href="#storage-operations" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
+<div class="section" id="create">
+<h4>Create<a class="headerlink" href="#create" title="Permalink to this headline">¶</a></h4>
+<p>TODO</p>
+</div>
+<div class="section" id="update">
+<h4>Update<a class="headerlink" href="#update" title="Permalink to this headline">¶</a></h4>
+<p>TODO</p>
+</div>
+<div class="section" id="delete">
+<h4>Delete<a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h4>
+<p>TODO</p>
+</div>
+<div class="section" id="get">
+<h4>Get<a class="headerlink" href="#get" title="Permalink to this headline">¶</a></h4>
+<p>TODO</p>
+</div>
+<div class="section" id="find">
+<h4>Find<a class="headerlink" href="#find" title="Permalink to this headline">¶</a></h4>
+<p>TODO</p>
+</div>
+</div>
+<div class="section" id="field-validation">
+<h3>Field Validation<a class="headerlink" href="#field-validation" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
+</div>
+<div class="section" id="field-parsing">
+<h3>Field Parsing<a class="headerlink" href="#field-parsing" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
+</div>
+</div>
+<div class="section" id="aggregate-references">
+<h2>Aggregate References<a class="headerlink" href="#aggregate-references" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AggregateRef</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Subject</span><span class="p">(</span><span class="n">AggregateRef</span><span class="p">):</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="entities">
+<h2>Entities<a class="headerlink" href="#entities" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Entity</span><span class="p">,</span>
+    <span class="n">ValueObjectSet</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Question</span><span class="p">(</span><span class="n">Entity</span><span class="p">):</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">choices</span><span class="p">:</span> <span class="o">...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="value-objects">
+<h2>Value Objects<a class="headerlink" href="#value-objects" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ValueObject</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Choice</span><span class="p">(</span><span class="n">ValueObject</span><span class="p">):</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">correct</span><span class="p">:</span> <span class="nb">bool</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="full-picture">
+<h2>Full Picture<a class="headerlink" href="#full-picture" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/aggregates.py&quot;&quot;&quot;</span>
+
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">annotations</span><span class="p">,</span>
 <span class="p">)</span>
+
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Aggregate</span><span class="p">,</span>
     <span class="n">ModelRef</span><span class="p">,</span>
@@ -190,20 +299,20 @@
     <span class="n">ValueObject</span><span class="p">,</span>
     <span class="n">ValueObjectSet</span><span class="p">,</span>
     <span class="n">EntitySet</span><span class="p">,</span>
-    <span class="n">EntityObjectSet</span><span class="p">,</span>
+    <span class="n">Entity</span><span class="p">,</span>
 <span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">Exam</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
     <span class="n">subject</span><span class="p">:</span> <span class="n">ModelRef</span><span class="p">[</span><span class="n">Subject</span><span class="p">]</span>
-    <span class="n">questions</span><span class="p">:</span> <span class="n">EntityObjectSet</span><span class="p">[</span><span class="n">Question</span><span class="p">]</span>
+    <span class="n">questions</span><span class="p">:</span> <span class="n">EntitySet</span><span class="p">[</span><span class="n">Question</span><span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">Subject</span><span class="p">(</span><span class="n">AggregateRef</span><span class="p">):</span>
     <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
 
 
-<span class="k">class</span> <span class="nc">Question</span><span class="p">(</span><span class="n">ValueObject</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Question</span><span class="p">(</span><span class="n">Entity</span><span class="p">):</span>
     <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">choices</span><span class="p">:</span> <span class="n">ValueObjectSet</span><span class="p">[</span><span class="n">Choice</span><span class="p">]</span>
 
