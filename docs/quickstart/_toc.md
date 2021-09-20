@@ -6,7 +6,7 @@ This is the quickstart's guide for `minos`. The purpose of this tutorial is to p
    :maxdepth: 2
 
    setup
-   aggregate
+   domain_modeling
    service
    saga
    testing
