@@ -92,7 +92,15 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="_toc.html">QuickStart</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modularity">Modularity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#package-managers">Package Managers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#poetry">Poetry</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="configuration.html">Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aggregate.html">Aggregate</a></li>
 <li class="toctree-l2"><a class="reference internal" href="service.html">Service</a></li>
@@ -174,6 +182,56 @@
             
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Before starting to think in multiple microservices, distributed environments and so on, it’s easier and better to start by knowing what components are needed to build a microservice individually. For sake of simplicity, each microservice can be seen as one small monolithic system that provides as limited or specialized functionality. Then, each microservice will probably need to interact with a storage system, contain some kind of business logic and expose that functionality over an external API, to be used by external clients and another microservices.</p>
+</div>
+<div class="section" id="modularity">
+<h2>Modularity<a class="headerlink" href="#modularity" title="Permalink to this headline">¶</a></h2>
+<p>To be able to provide all that environment functionalities, <code class="docutils literal notranslate"><span class="pre">minos</span></code> relies on external dedicated libraries. For example, to read or store data in postgres database <code class="docutils literal notranslate"><span class="pre">aiopg</span></code> is used, to publish or subscribe to kafka topics <code class="docutils literal notranslate"><span class="pre">aiokafka</span></code> is used and to expose a REST interface <code class="docutils literal notranslate"><span class="pre">aiohttp</span></code> is used. In any case, the <code class="docutils literal notranslate"><span class="pre">minos</span></code> philosophy is that the surrounding technologies must not be frozen to these and each of project must have its own ones so the list of supported databases and brokers will be increased in future <code class="docutils literal notranslate"><span class="pre">minos</span></code> releases.</p>
+<p>An important thing to know is that <code class="docutils literal notranslate"><span class="pre">minos</span></code> relies on latest <code class="docutils literal notranslate"><span class="pre">Python</span></code> functionalities so the minimal required version is <code class="docutils literal notranslate"><span class="pre">3.9</span></code> or greater. One of the reasons are the use of <em>async</em> code together with <em>type hinted</em> code.</p>
+<p>Another important detail about how the <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework is how it is packaged. Instead of providing all the framework as a single and big component, it relies on <code class="docutils literal notranslate"><span class="pre">Python</span></code> <a class="reference external" href="https://packaging.python.org/guides/packaging-namespace-packages/">namespaces</a> to provide a modular but organized way to install only the exact part of functionality that will be used. The main packages are the following ones:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pypi.org/project/minos-microservice-common/">minos-microservice-common</a>: Contains the <code class="docutils literal notranslate"><span class="pre">minos.common</span></code> module.</p></li>
+<li><p><a class="reference external" href="https://pypi.org/project/minos-microservice-networks/">minos-microservice-networks</a>:  Contains the <code class="docutils literal notranslate"><span class="pre">minos.networks</span></code> module.</p></li>
+<li><p><a class="reference external" href="https://pypi.org/project/minos-microservice-saga/">minos-microservice-saga</a>: Contains the <code class="docutils literal notranslate"><span class="pre">minos.saga</span></code> module.</p></li>
+<li><p><a class="reference external" href="https://pypi.org/project/minos-microservice-cqrs/">minos-microservice-cqrs</a>: Contains the <code class="docutils literal notranslate"><span class="pre">minos.cqrs</span></code> module.</p></li>
+</ul>
+</div>
+<div class="section" id="package-managers">
+<h2>Package Managers<a class="headerlink" href="#package-managers" title="Permalink to this headline">¶</a></h2>
+<p>Before starting a <code class="docutils literal notranslate"><span class="pre">Python</span></code> project, a package manager is needed to install and manage external dependencies. As it’s expected, <code class="docutils literal notranslate"><span class="pre">minos</span></code> is compatible with any of them, but the recommended one is <code class="docutils literal notranslate"><span class="pre">Poetry</span></code> as it provides simple but powerful functionalities.</p>
+<div class="section" id="poetry">
+<h3>Poetry<a class="headerlink" href="#poetry" title="Permalink to this headline">¶</a></h3>
+<p>To install poetry, it’s recommended to follow its own guide, that can be found <a class="reference external" href="https://python-poetry.org/docs/">here</a>. After installing <code class="docutils literal notranslate"><span class="pre">poetry</span></code>, everything is ready to build the first microservice!</p>
+<p>The first step is to create the project (the project name can be whatever you want, but a <code class="docutils literal notranslate"><span class="pre">minos</span></code> microservice convention is to name it as <code class="docutils literal notranslate"><span class="pre">src</span></code>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry new product-microservice-example --name src
+</pre></div>
+</div>
+<p>The project structure will be similar to:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>product-microservice-example
+├── README.rst
+├── pyproject.toml
+├── src
+│   └── __init__.py
+└── tests
+    ├── __init__.py
+    └── test_src.py
+
+<span class="m">2</span> directories, <span class="m">5</span> files
+</pre></div>
+</div>
+<p>To install the <code class="docutils literal notranslate"><span class="pre">minos</span></code> dependencies, simply exec the following command on the project’s root directory:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry add <span class="se">\</span>
+  minos-microservice-common <span class="se">\</span>
+  minos-microservice-networks <span class="se">\</span>
+  minos-microservice-saga <span class="se">\</span>
+  minos-microservice-cqrs
+</pre></div>
+</div>
+<p>After that, every <code class="docutils literal notranslate"><span class="pre">minos</span></code> dependencies are ready to be used. Let’s move to the configuration step!</p>
+</div>
+</div>
 </div>
 
 
