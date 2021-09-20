@@ -4,10 +4,9 @@
 
 TODO 
 
-## Configuration file
-
 ```yaml
 # config.yml
+
 service:
   name: product
   aggregate: src.aggregates.Product

@@ -8,10 +8,8 @@ TODO
 
 TODO
 
-### `src/cli.py` file
-
 ```python
-"""src/cli.py file."""
+"""src/cli.py"""
 
 import sys
 from pathlib import (
@@ -50,7 +48,7 @@ def main():  # pragma: no cover
     app()
 ```
 
-### `src/__main__.py` file
+TODO
 
 ```python
 """src/__main__.py"""

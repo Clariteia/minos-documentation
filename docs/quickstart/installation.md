@@ -30,6 +30,7 @@ dependencies:
 
 ```yaml
 # docker-compose.yml
+
 version: "3.9"
 services:
   postgres:
