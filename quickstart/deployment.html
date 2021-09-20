@@ -98,7 +98,15 @@
 <li class="toctree-l2"><a class="reference internal" href="service.html">Service</a></li>
 <li class="toctree-l2"><a class="reference internal" href="saga.html">Saga</a></li>
 <li class="toctree-l2"><a class="reference internal" href="testing.html">Testing</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Deployment</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Deployment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#command-line-interface">Command Line Interface</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src-cli-py-file"><code class="docutils literal notranslate"><span class="pre">src/cli.py</span></code> file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src-main-py-file"><code class="docutils literal notranslate"><span class="pre">src/__main__.py</span></code> file</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../architecture/_toc.html">Architecture</a></li>
@@ -174,7 +182,69 @@
             
   <div class="section" id="deployment">
 <h1>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
+</div>
+<div class="section" id="command-line-interface">
+<h2>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+<div class="section" id="src-cli-py-file">
+<h3><code class="docutils literal notranslate"><span class="pre">src/cli.py</span></code> file<a class="headerlink" href="#src-cli-py-file" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/cli.py file.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Path</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Optional</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">typer</span>
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EntrypointLauncher</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">typer</span><span class="o">.</span><span class="n">Typer</span><span class="p">()</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">start</span><span class="p">(</span>
+    <span class="n">file_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="n">typer</span><span class="o">.</span><span class="n">Argument</span><span class="p">(</span>
+        <span class="s2">&quot;config.yml&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Microservice configuration file.&quot;</span><span class="p">,</span> <span class="n">envvar</span><span class="o">=</span><span class="s2">&quot;MINOS_CONFIGURATION_FILE_PATH&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Start the microservice.&quot;&quot;&quot;</span>
+    <span class="n">launcher</span> <span class="o">=</span> <span class="n">EntrypointLauncher</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">external_modules</span><span class="o">=</span><span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s2">&quot;src&quot;</span><span class="p">]])</span>
+    <span class="n">launcher</span><span class="o">.</span><span class="n">launch</span><span class="p">()</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">callback</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">callback</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Minos microservice CLI.&quot;&quot;&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>  <span class="c1"># pragma: no cover</span>
+    <span class="sd">&quot;&quot;&quot;CLI&#39;s main function.&quot;&quot;&quot;</span>
+    <span class="n">app</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="src-main-py-file">
+<h3><code class="docutils literal notranslate"><span class="pre">src/__main__.py</span></code> file<a class="headerlink" href="#src-main-py-file" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/__main__.py&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">.cli</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">main</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
 </div>
 
 

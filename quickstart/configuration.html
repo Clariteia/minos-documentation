@@ -93,7 +93,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="_toc.html">QuickStart</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Configuration</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-file">Configuration file</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="aggregate.html">Aggregate</a></li>
 <li class="toctree-l2"><a class="reference internal" href="service.html">Service</a></li>
 <li class="toctree-l2"><a class="reference internal" href="saga.html">Saga</a></li>
@@ -174,7 +178,76 @@
             
   <div class="section" id="configuration">
 <h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
+</div>
+<div class="section" id="configuration-file">
+<h2>Configuration file<a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">service</span><span class="p">:</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">product</span>
+  <span class="nt">aggregate</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.aggregates.Product</span>
+  <span class="nt">injections</span><span class="p">:</span>
+    <span class="nt">postgresql_pool</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.common.PostgreSqlPool</span>
+    <span class="nt">command_broker</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.CommandBroker</span>
+    <span class="nt">command_reply_broker</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.CommandReplyBroker</span>
+    <span class="nt">event_broker</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.EventBroker</span>
+    <span class="nt">consumer</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.Consumer</span>
+    <span class="nt">dynamic_handler_pool</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.DynamicHandlerPool</span>
+    <span class="nt">repository</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.common.PostgreSqlRepository</span>
+    <span class="nt">saga_manager</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.saga.SagaManager</span>
+    <span class="nt">snapshot</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.common.PostgreSqlSnapshot</span>
+    <span class="nt">discovery</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.DiscoveryConnector</span>
+  <span class="nt">services</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.ConsumerService</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.CommandHandlerService</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.CommandReplyHandlerService</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.EventHandlerService</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.RestService</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.SnapshotService</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.ProducerService</span>
+<span class="nt">rest</span><span class="p">:</span>
+  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.0.0.0</span>
+  <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">8082</span>
+<span class="nt">broker</span><span class="p">:</span>
+  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
+  <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">9092</span>
+  <span class="nt">queue</span><span class="p">:</span>
+    <span class="nt">database</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">product_db</span>
+    <span class="nt">user</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos</span>
+    <span class="nt">password</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">min0s</span>
+    <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
+    <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5432</span>
+    <span class="nt">records</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1000</span>
+    <span class="nt">retry</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="nt">repository</span><span class="p">:</span>
+  <span class="nt">database</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">product_db</span>
+  <span class="nt">user</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos</span>
+  <span class="nt">password</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">min0s</span>
+  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
+  <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5432</span>
+<span class="nt">snapshot</span><span class="p">:</span>
+  <span class="nt">database</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">product_db</span>
+  <span class="nt">user</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos</span>
+  <span class="nt">password</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">min0s</span>
+  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
+  <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5432</span>
+<span class="nt">events</span><span class="p">:</span>
+  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.ProductQueryService</span>
+<span class="nt">queries</span><span class="p">:</span>
+  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.ProductQueryService</span>
+<span class="nt">commands</span><span class="p">:</span>
+  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.ProductCommandService</span>
+<span class="nt">saga</span><span class="p">:</span>
+  <span class="nt">storage</span><span class="p">:</span>
+    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">./product.lmdb</span>
+<span class="nt">discovery</span><span class="p">:</span>
+  <span class="nt">client</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.MinosDiscoveryClient</span>
+  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
+  <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5567</span>
+</pre></div>
+</div>
+</div>
 </div>
 
 
