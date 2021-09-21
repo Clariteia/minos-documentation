@@ -187,22 +187,32 @@ TODO
 from __future__ import (
     annotations,
 )
+from typing import (
+    Any,
+)
 
 from minos.common import (
     Aggregate,
-    ModelRef,
     AggregateRef,
+    Entity,
+    EntitySet,
+    ModelRef,
     ValueObject,
     ValueObjectSet,
-    EntitySet,
-    Entity,
 )
 
 
 class Exam(Aggregate):
     subject: ModelRef[Subject]
     questions: EntitySet[Question]
-
+    
+    def parse_name(self, value: Any) -> Any:
+        if not isinstance(value, str):
+            return value
+        return value.title()
+    
+    def validate_name(self, value: Any) -> bool:
+        return isinstance(value, str) and len(value) >= 6
 
 class Subject(AggregateRef):
     title: str
