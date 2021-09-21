@@ -96,7 +96,7 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Modeling the Domain: Aggregates</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#defining-the-exam-aggregate">Defining the <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate…</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#storage-operations">Storage operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#storage-operations">Storage Operations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#field-validation">Field Validation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#field-parsing">Field Parsing</a></li>
 </ul>
@@ -189,11 +189,14 @@
 <h1>Modeling the Domain: Aggregates<a class="headerlink" href="#modeling-the-domain-aggregates" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>In opposite to monolithic systems who use relational database model to represent and store the business logic, microservice-based systems requires applying slightly different techniques. One of the main reasons to start thinking different is based on the splitting of a single but big information schema into multiple smaller ones, as each microservice has its own dedicated database.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">minos</span></code> proposal is based on the <em>Domain Drive Design (DDD)</em> ideas, supported by <em>Entities</em>, <em>Value-Objects</em> and an <em>Aggregate</em> (or <em>Root Entity</em>) that represents the main concept of the microservice. These set of concepts allows us to model information at microservice level, but at some cases it’s needed to relate information from one microservice with information from another one. The way to do that in <code class="docutils literal notranslate"><span class="pre">minos</span></code> is over <em>Aggregate References</em>. To understand these concepts in more detail, the <a class="reference internal" href="../architecture/data_model.html"><span class="doc">Data Model</span></a> section provides a more detailed explanation about them.</p>
 </div>
 <div class="section" id="defining-the-exam-aggregate">
 <h2>Defining the <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate…<a class="headerlink" href="#defining-the-exam-aggregate" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>As it is advanced at the beginning of the <a class="reference internal" href="_toc.html"><span class="doc">QuickStart</span></a> guide, the study case will be to define an <code class="docutils literal notranslate"><span class="pre">exam</span></code> microservice. This one will be able to store all the needed information related with a common <em>exam</em> composed of questions with selectable answers. For sake of simplicity, all of them must be multiple answer questions, but it’s a good practising exercise to continue working on these case and add another functionalities.</p>
+<p>In this case, the <code class="docutils literal notranslate"><span class="pre">Exam</span></code> class will be the root-entity or <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> of the microservice, so that most of the operations sent to it will be related with the <code class="docutils literal notranslate"><span class="pre">Exam</span></code>. In <code class="docutils literal notranslate"><span class="pre">minos</span></code>, the way to do that is to inherit from the <code class="docutils literal notranslate"><span class="pre">minos.common.Aggregate</span></code> class, that is similar to <code class="docutils literal notranslate"><span class="pre">Python</span></code>‘s <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html">dataclasses</a> in the sense that is able to build the class fields based on the typing. The currently supported types are all the simple <code class="docutils literal notranslate"><span class="pre">Python</span></code>‘s types (<code class="docutils literal notranslate"><span class="pre">int</span></code>, <code class="docutils literal notranslate"><span class="pre">float</span></code>, <code class="docutils literal notranslate"><span class="pre">str</span></code>, …) but also another advanced types are supported, like <code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">dict</span></code>, <code class="docutils literal notranslate"><span class="pre">datetime</span></code>, etc. See the full documentation to obtain a detailed description.</p>
+<p>With this simple functionality, it’s already possible to start building the <code class="docutils literal notranslate"><span class="pre">Exam</span></code> structure, or at least defining the fields based on simpler types, as it can be seen here:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">timedelta</span><span class="p">,</span>
 <span class="p">)</span>
@@ -206,24 +209,64 @@
 <span class="k">class</span> <span class="nc">Exam</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">duration</span><span class="p">:</span> <span class="n">timedelta</span>
-    <span class="n">subject</span><span class="p">:</span> <span class="o">...</span>
-    <span class="n">questions</span><span class="p">:</span> <span class="o">...</span>
+    <span class="c1"># subject: ...</span>
+    <span class="c1"># questions: ...</span>
 </pre></div>
 </div>
+<p>Then, an exam instance could be created as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Exam</span><span class="p">(</span><span class="s2">&quot;Mid-term Exam&quot;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>One important thing to notice is that the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> class also provides another additional fields related both with the identification and versioning that must not be provided by the developer (they are computed internally). The concrete fields are the following:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">uuid:</span> <span class="pre">UUID</span></code> Unique identifier of the instance.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">version:</span> <span class="pre">int</span></code> Version of the instance, computed as an auto-incremental integer starting from <code class="docutils literal notranslate"><span class="pre">1</span></code> during the creation process.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">created_at:</span> <span class="pre">datetime</span></code> Creation timestamp of the instance.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">updated_at:</span> <span class="pre">datetime</span></code> Timestamp of the last update of the instance.</p></li>
+</ul>
+<p>But the real potential of the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> class starts being visible when storage operations are performed:</p>
 <div class="section" id="storage-operations">
-<h3>Storage operations<a class="headerlink" href="#storage-operations" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
+<h3>Storage Operations<a class="headerlink" href="#storage-operations" title="Permalink to this headline">¶</a></h3>
+<p>Before starting to describe the available <em>CRUD</em> operations provided by the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> class, it’s important to notice one important part of the <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework and how those operations are implemented. The nature of the framework is highly inspired by <em>Event Sourcing</em> thoughts, so that the aggregate is not simply stored on a collection that is being updated progressively without taking history into account, but the aggregate is stored as a sequence of incremental modifications known as <code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> entries that acts as <em>Domain Events</em>.</p>
+<p>This set of events are stored on a <em>Repository</em> who is defined by the <code class="docutils literal notranslate"><span class="pre">minos.common.MinosRepository</span></code> interface, but also are exposed to another microservices over a <em>Broker</em>, who is defined by the <code class="docutils literal notranslate"><span class="pre">minos.common.MinosBroker</span></code> interface. The event based strategy has an important caveat, that is how to access the full aggregate as most business logic operations will probably require working with a full <code class="docutils literal notranslate"><span class="pre">Exam</span></code> instance (not only with the sequence of <code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> instances). As the reconstruction each time a full instance is needed is a really inefficient operation, <code class="docutils literal notranslate"><span class="pre">minos</span></code> holds on a <em>Snapshot</em> who is defined by the <code class="docutils literal notranslate"><span class="pre">minos.common.MinosSnapshot</span></code> interface and provided direct access to the reconstructed instances. To know more about how <code class="docutils literal notranslate"><span class="pre">Event</span> <span class="pre">Sourcing</span></code> is implemented in <code class="docutils literal notranslate"><span class="pre">minos</span></code>, the [TODO: link to architecture] sections provides a detailed description.</p>
+<p>The configuration file <code class="docutils literal notranslate"><span class="pre">service.injections</span></code> section of the configuration file allows to setup both the <code class="docutils literal notranslate"><span class="pre">reposiory</span></code>, <code class="docutils literal notranslate"><span class="pre">event_broker</span></code> and <code class="docutils literal notranslate"><span class="pre">snapshot</span></code> concrete classes:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># config.yml</span>
+
+<span class="nt">service</span><span class="p">:</span>
+  <span class="nt">injections</span><span class="p">:</span>
+    <span class="nt">event_broker</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.EventBroker</span>
+    <span class="nt">repository</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.common.PostgreSqlRepository</span>
+    <span class="nt">snapshot</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.common.PostgreSqlSnapshot</span>
+<span class="nn">...</span>
+</pre></div>
+</div>
 <div class="section" id="create">
 <h4>Create<a class="headerlink" href="#create" title="Permalink to this headline">¶</a></h4>
 <p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">exam</span> <span class="o">=</span> <span class="k">await</span> <span class="n">Exam</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;Mid-term Exam&quot;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="update">
 <h4>Update<a class="headerlink" href="#update" title="Permalink to this headline">¶</a></h4>
 <p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="n">exam</span><span class="o">.</span><span class="n">duration</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Additionally, the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> class provides a <code class="docutils literal notranslate"><span class="pre">save()</span></code> method that automatically creates or updated the instance depending of if it’s a new one or an already exising. Here is an example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">exam</span> <span class="o">=</span> <span class="n">Exam</span><span class="p">(</span><span class="s2">&quot;Mid-term Exam&quot;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">exam</span><span class="o">.</span><span class="n">duration</span> <span class="o">+=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="delete">
 <h4>Delete<a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h4>
 <p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="get">
 <h4>Get<a class="headerlink" href="#get" title="Permalink to this headline">¶</a></h4>
@@ -266,7 +309,7 @@
 
 <span class="k">class</span> <span class="nc">Question</span><span class="p">(</span><span class="n">Entity</span><span class="p">):</span>
     <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">choices</span><span class="p">:</span> <span class="o">...</span>
+    <span class="c1"># choices: ...</span>
 </pre></div>
 </div>
 </div>
