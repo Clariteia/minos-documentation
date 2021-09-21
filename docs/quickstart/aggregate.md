@@ -47,7 +47,7 @@ But the real potential of the `Aggregate` class starts being visible when storag
 
 Before starting to describe the available *CRUD* operations provided by the `Aggregate` class, it's important to notice one important part of the `minos` framework and how those operations are implemented. The nature of the framework is highly inspired by *Event Sourcing* thoughts, so that the aggregate is not simply stored on a collection that is being updated progressively without taking history into account, but the aggregate is stored as a sequence of incremental modifications known as `AggregateDiff` entries that acts as *Domain Events*. 
 
-This set of events are stored on a *Repository* who is defined by the `minos.common.MinosRepository` interface, but also are exposed to another microservices over a *Broker*, who is defined by the `minos.common.MinosBroker` interface. The event based strategy has an important caveat, that is how to access the full aggregate as most business logic operations will probably require working with a full `Exam` instance (not only with the sequence of `AggregateDiff` instances). As the reconstruction each time a full instance is needed is a really inefficient operation, `minos` holds on a *Snapshot* who is defined by the `minos.common.MinosSnapshot` interface and provided direct access to the reconstructed instances. To know more about how `Event Sourcing` is implemented in `minos`, the [TODO: link to architecture] sections provides a detailed description.
+This set of events are stored on a *Repository* who is defined by the `minos.common.MinosRepository` interface, but also are exposed to another microservices over a *Broker*, who is defined by the `minos.common.MinosBroker` interface. The event based strategy has an important caveat, that is how to access the full aggregate as most business logic operations will probably require working with a full `Exam` instance (not only with the sequence of `AggregateDiff` instances). As the reconstruction each time a full instance is needed is a really inefficient operation, `minos` holds on a *Snapshot* who is defined by the `minos.common.MinosSnapshot` interface and provided direct access to the reconstructed instances. To know more about how *Event Sourcing* is implemented in `minos`, the [TODO: link to architecture] sections provides a detailed description.
 
 The configuration file `service.injections` section of the configuration file allows to setup both the `reposiory`, `event_broker` and `snapshot` concrete classes:
 ```yaml
@@ -77,10 +77,11 @@ await exam.update(duration=exam.duration + timedelta(hours=1))
 ```
 
 
-Additionally, the `Aggregate` class provides a `save()` method that automatically creates or updated the instance depending of if it's a new one or an already exising. Here is an example:
+Additionally, the `Aggregate` class provides a `save()` method that automatically creates or updates the instance depending on if it's a new one or an already exising. Here is an example:
 ```python
 exam = Exam("Mid-term Exam", timedelta(hours=1))
 await exam.save()
+
 exam.duration += timedelta(minutes=30)
 await exam.save()
 ```
@@ -95,14 +96,45 @@ await exam.delete()
 #### Get
 TODO
 
+```python
+identifier: UUID = ... 
+exam = await Exam.get(identifier)
+```
+
 #### Find
 TODO
+
+```python
+condition = ...
+async for exam in Exam.find(condition):
+    print(exam)
+```
+
+### Field Parsing
+TODO
+
+```python
+class Exam(Aggregate):
+    ...
+
+    def parse_name(self, value: Any) -> Any:
+        if not isinstance(value, str):
+            return value
+        return value.title()
+```
 
 ### Field Validation
 TODO
 
-### Field Parsing
-TODO
+```python
+class Exam(Aggregate):
+    ...
+
+    def validate_name(self, value: Any) -> bool:
+        return isinstance(value, str) and len(value) >= 6
+```
+
+
 
 ## Defining the `Subject` reference...
 TODO
