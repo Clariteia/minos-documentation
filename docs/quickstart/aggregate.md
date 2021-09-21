@@ -178,7 +178,7 @@ class Choice(ValueObject):
 ```
 
 
-## Full Picture...
+## Summary
 TODO
 
 ```python
