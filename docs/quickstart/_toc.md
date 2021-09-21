@@ -7,7 +7,8 @@ This is the quickstart's guide for `minos`. The purpose of this tutorial is to p
 
    setup
    aggregate
-   service
+   command
+   query
    saga
    testing
    deployment
