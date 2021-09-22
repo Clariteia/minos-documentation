@@ -205,8 +205,12 @@ exams = await gather(*(Exam.get(uuid) for uuid in uuids))
 If the validation checks are not needed, or can be performed directly at application level, a better option is to use the `find` class method.
 
 #### Find
-TODO
 
+Previously described operations have one important thing in common, that is all of them need to know the exact aggregate instance to work with, in other words, all of them needed to know the exact identifier of the instance. Is true that in many cases, this is enough to resolve many use cases, but there are some situations in which a more advanced search is needed. A common example is when it's needed to apply operations to a set of instances characterised by special conditions and so on.   
+
+The way to perform this kind of queries is with the `find` class method, which not only filters instances according to a given `Condition`, but can also return them with some specific `Ordering` and `limit` the maximum number of instances. For more details about how to write complex queries is highly recommended reading the [minos.common.queries](https://clariteia.github.io/minos_microservice_common/api/minos.common.queries.html) reference documentation. Another thing to know about the `find` class method is that it returns the obtained instances over an `AsyncIterator` and supports a streaming mode directly from the database if the `streaming_mode` flag is set to `True`.
+
+Here is an example of a relatively complex `find` operation, that will return a ranking of `"Mid-term"` exams with more duration created during the last week: 
 ```python
 from datetime import (
     date,
