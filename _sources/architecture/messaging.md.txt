@@ -1,3 +1,5 @@
+# Messaging
+
 ## Introduction
 
 The message is the minimum unit of communication between different actors or the same. An message is a change in state, 
@@ -250,3 +252,14 @@ Now that we know the components involved, let's look at the complete flow:
 6. If the message has been published, it is deleted
 
    The `Handler` takes care of deleting the message from the local database once it has been successfully consumed.
+
+
+## Event
+TODO
+
+
+## Command
+TODO
+
+## Command Reply
+TODO
