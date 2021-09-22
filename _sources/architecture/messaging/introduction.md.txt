@@ -31,7 +31,7 @@ The general operation of the messages (`Events`, `Commands` and `Command Replies
    DB_A -> Producer: Notify
    Producer --> DB_A: Get Message
    Producer --> Kafka: Publish Message
-   Kafka <-- Consumer: Receive Message
+   Kafka <--> Consumer: Receive Message
    Consumer -> DB_B: Notify
    Consumer -> DB_B: Store Message
    DB_B -> Handler: Notify
@@ -121,23 +121,23 @@ Now that we know the components involved, let's look at the complete flow:
 5. The `Producer` publishes the messages in `Kafka`
 
    The message have several **attempts** to be stored in the database (parameterizable). As an example, we set the
-   number of retries to 3, if on the third attempt the message is not stored in the database, it is marked to not be
+   number of retries to 3, if on the third attempt the message is not published to the Kafka, it is marked to not be
    processed any more times. 
    
-.. uml::
-   :align: center
-
-   @startuml
-   database DB_A
-   participant Producer
-   database Kafka
+   .. uml::
+      :align: center
    
-   autonumber
-   Producer ->x Kafka: Publish Message
-   Producer ->x Kafka: Publish Message
-   Producer ->x Kafka: Publish Message
-   Producer -> DB_A: Message marked for no further processing
-   @enduml
+      @startuml
+      database DB_A
+      participant Producer
+      database Kafka
+      
+      autonumber
+      Producer ->x Kafka: Publish Message
+      Producer ->x Kafka: Publish Message
+      Producer ->x Kafka: Publish Message
+      Producer -> DB_A: Message marked for no further processing
+      @enduml
 
 
 6. If the message has been published, it is deleted
@@ -146,4 +146,107 @@ Now that we know the components involved, let's look at the complete flow:
    Kafka.
 
 ## Message Receiving
-TODO
+
+Once the message is in Kafka, it can be consumed by the services that need it. There are several processes for receiving
+the message from Kafka to trigger an action.
+
+The components that must be known beforehand are:
++ Consumer: It is in charge of obtaining the message from Kafka and storing it in the database.
++ Database: It is the database where the message is stored to preserve transactionality and to be tolerant to system 
+  failures.
++ Handler: It is responsible of triggering the final action (calling the function that is subscribed to the message 
+  for example).
+
+Now that we know the components involved, let's look at the complete flow:
+
+.. uml::
+   :align: center
+
+   @startuml
+   database Kafka
+   box "Message Receiving - Microservice Y" #F3FFF6
+   participant Consumer
+   database DB_B
+   participant Handler
+   end box
+   
+   autonumber
+
+   Kafka <--> Consumer: Receive Message
+   Consumer -> DB_B: Notify
+   Consumer -> DB_B: Store Message
+   DB_B -> Handler: Notify
+   Handler --> DB_B: Get Message
+   Handler --> :Trigger action
+   @enduml
+   
+1. The `Consumer` subscribes to Kafka and get new messages
+   
+   The `Consumer` subscribes to `Kafka` and is responsible for receiving new messages.
+
+   The received message is stored in the `PostgreSQL` database of the corresponding microservice.
+   The table where the message is stored has the following structure:
+   ```SQL
+   CREATE TABLE IF NOT EXISTS consumer_queue (
+   id BIGSERIAL NOT NULL PRIMARY KEY,
+   topic VARCHAR(255) NOT NULL,
+   partition INTEGER,
+   data BYTEA NOT NULL,
+   retry INTEGER NOT NULL DEFAULT 0,
+   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())
+   ```
+
+2. The `Consumer` trigger notify action to the database
+   
+   The `Consumer` triggers a notification to let the `Handler` know that new messages are available.
+   ```SQL
+   NOTIFY consumer_queue
+   ```
+   
+3. The `Handler` listens to new messages
+   
+   The `Handler` is actively listening for new messages using the following SQL:
+
+   ```SQL
+   LISTEN consumer_queue
+   ```
+
+4. The `Handler` is notified of new messages
+
+   The `Handler` reads from the database table (mentioned in step 1) obtaining the new messages.
+
+
+5. Final action is triggered
+
+   The message have several **attempts** to be consumed in the database (parameterizable). As an example, we set the
+   number of retries to 3, if on the third attempt the message is not triggered to action correctly, it is marked to not be
+   processed any more times.
+   
+   .. uml::
+      :align: center
+   
+      @startuml
+      database Kafka
+      box "Message Receiving - Microservice Y" #F3FFF6
+      participant Consumer
+      database DB_B
+      participant Handler
+      end box
+      
+      autonumber
+   
+      Kafka <--> Consumer: Receive Message
+      Consumer -> DB_B: Notify
+      Consumer -> DB_B: Store Message
+      DB_B -> Handler: Notify
+      Handler --> DB_B: Get Message
+      Handler ->x Action :Trigger action
+      Handler ->x Action :Trigger action
+      Handler ->x Action :Trigger action
+      Handler -> DB_B: Message marked for no further processing
+      @enduml
+
+6. If the message has been published, it is deleted
+
+   The `Handler` takes care of deleting the message from the local database once it has been successfully consumed.

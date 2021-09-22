@@ -189,7 +189,7 @@ Messages can either carry the state (the item purchased, its price, and a delive
 <p>The general operation of the messages (<code class="docutils literal notranslate"><span class="pre">Events</span></code>, <code class="docutils literal notranslate"><span class="pre">Commands</span></code> and <code class="docutils literal notranslate"><span class="pre">Command</span> <span class="pre">Replies</span></code>) is as follows:</p>
 <div class="figure align-center">
 <p class="plantuml">
-<img src="../../_images/plantuml-1e5b7c82da81ceda3e6fba62cca965cb53915314.png" alt="&#64;startuml
+<img src="../../_images/plantuml-5f7a2fe714fc208aad80459bc79a758c6b316bb6.png" alt="&#64;startuml
 box &quot;Message Publishing - Microservice X&quot; #FFFFF3
 participant Broker
 database DB_A
@@ -210,7 +210,7 @@ Broker -&gt; DB_A: Notify
 DB_A -&gt; Producer: Notify
 Producer --&gt; DB_A: Get Message
 Producer --&gt; Kafka: Publish Message
-Kafka &lt;-- Consumer: Receive Message
+Kafka &lt;--&gt; Consumer: Receive Message
 Consumer -&gt; DB_B: Notify
 Consumer -&gt; DB_B: Store Message
 DB_B -&gt; Handler: Notify
@@ -294,10 +294,8 @@ The table where the message is stored has the following structure:</p>
 </li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">Producer</span></code> publishes the messages in <code class="docutils literal notranslate"><span class="pre">Kafka</span></code></p>
 <p>The message have several <strong>attempts</strong> to be stored in the database (parameterizable). As an example, we set the
-number of retries to 3, if on the third attempt the message is not stored in the database, it is marked to not be
+number of retries to 3, if on the third attempt the message is not published to the Kafka, it is marked to not be
 processed any more times.</p>
-</li>
-</ol>
 <div class="figure align-center">
 <p class="plantuml">
 <img src="../../_images/plantuml-2c3cfbd6fcd33deadc2a37f0595b9d85d54ae11e.png" alt="&#64;startuml
@@ -313,7 +311,7 @@ Producer -&gt; DB_A: Message marked for no further processing
 &#64;enduml"/>
 </p>
 </div>
-<ol class="arabic">
+</li>
 <li><p>If the message has been published, it is deleted</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">producer</span></code> takes care of deleting the message from the local database once it has been successfully published in
 Kafka.</p>
@@ -322,7 +320,102 @@ Kafka.</p>
 </div>
 <div class="section" id="message-receiving">
 <h1>Message Receiving<a class="headerlink" href="#message-receiving" title="Permalink to this headline">¶</a></h1>
-<p>TODO</p>
+<p>Once the message is in Kafka, it can be consumed by the services that need it. There are several processes for receiving
+the message from Kafka to trigger an action.</p>
+<p>The components that must be known beforehand are:</p>
+<ul class="simple">
+<li><p>Consumer: It is in charge of obtaining the message from Kafka and storing it in the database.</p></li>
+<li><p>Database: It is the database where the message is stored to preserve transactionality and to be tolerant to system
+failures.</p></li>
+<li><p>Handler: It is responsible of triggering the final action (calling the function that is subscribed to the message
+for example).</p></li>
+</ul>
+<p>Now that we know the components involved, let’s look at the complete flow:</p>
+<div class="figure align-center">
+<p class="plantuml">
+<img src="../../_images/plantuml-fb9c6b9340d90e73dcd39f5bc8e279d877aeb3a3.png" alt="&#64;startuml
+database Kafka
+box &quot;Message Receiving - Microservice Y&quot; #F3FFF6
+participant Consumer
+database DB_B
+participant Handler
+end box
+
+autonumber
+
+Kafka &lt;--&gt; Consumer: Receive Message
+Consumer -&gt; DB_B: Notify
+Consumer -&gt; DB_B: Store Message
+DB_B -&gt; Handler: Notify
+Handler --&gt; DB_B: Get Message
+Handler --&gt; :Trigger action
+&#64;enduml"/>
+</p>
+</div>
+<ol class="arabic">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">Consumer</span></code> subscribes to Kafka and get new messages</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Consumer</span></code> subscribes to <code class="docutils literal notranslate"><span class="pre">Kafka</span></code> and is responsible for receiving new messages.</p>
+<p>The received message is stored in the <code class="docutils literal notranslate"><span class="pre">PostgreSQL</span></code> database of the corresponding microservice.
+The table where the message is stored has the following structure:</p>
+<div class="highlight-SQL notranslate"><div class="highlight"><pre><span></span><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="k">IF</span> <span class="k">NOT</span> <span class="k">EXISTS</span> <span class="n">consumer_queue</span> <span class="p">(</span>
+<span class="n">id</span> <span class="n">BIGSERIAL</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span>
+<span class="n">topic</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="n">partition</span> <span class="nb">INTEGER</span><span class="p">,</span>
+<span class="k">data</span> <span class="n">BYTEA</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="n">retry</span> <span class="nb">INTEGER</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="mi">0</span><span class="p">,</span>
+<span class="n">created_at</span> <span class="n">TIMESTAMPTZ</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="n">NOW</span><span class="p">(),</span>
+<span class="n">updated_at</span> <span class="n">TIMESTAMPTZ</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="n">NOW</span><span class="p">())</span>
+</pre></div>
+</div>
+</li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">Consumer</span></code> trigger notify action to the database</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Consumer</span></code> triggers a notification to let the <code class="docutils literal notranslate"><span class="pre">Handler</span></code> know that new messages are available.</p>
+<div class="highlight-SQL notranslate"><div class="highlight"><pre><span></span><span class="k">NOTIFY</span> <span class="n">consumer_queue</span>
+</pre></div>
+</div>
+</li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">Handler</span></code> listens to new messages</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Handler</span></code> is actively listening for new messages using the following SQL:</p>
+<div class="highlight-SQL notranslate"><div class="highlight"><pre><span></span><span class="k">LISTEN</span> <span class="n">consumer_queue</span>
+</pre></div>
+</div>
+</li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">Handler</span></code> is notified of new messages</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Handler</span></code> reads from the database table (mentioned in step 1) obtaining the new messages.</p>
+</li>
+<li><p>Final action is triggered</p>
+<p>The message have several <strong>attempts</strong> to be consumed in the database (parameterizable). As an example, we set the
+number of retries to 3, if on the third attempt the message is not triggered to action correctly, it is marked to not be
+processed any more times.</p>
+<div class="figure align-center">
+<p class="plantuml">
+<img src="../../_images/plantuml-ac359e38a97a08e6482dc4d22ef121f36493d721.png" alt="&#64;startuml
+database Kafka
+box &quot;Message Receiving - Microservice Y&quot; #F3FFF6
+participant Consumer
+database DB_B
+participant Handler
+end box
+
+autonumber
+
+Kafka &lt;--&gt; Consumer: Receive Message
+Consumer -&gt; DB_B: Notify
+Consumer -&gt; DB_B: Store Message
+DB_B -&gt; Handler: Notify
+Handler --&gt; DB_B: Get Message
+Handler -&gt;x Action :Trigger action
+Handler -&gt;x Action :Trigger action
+Handler -&gt;x Action :Trigger action
+Handler -&gt; DB_B: Message marked for no further processing
+&#64;enduml"/>
+</p>
+</div>
+</li>
+<li><p>If the message has been published, it is deleted</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Handler</span></code> takes care of deleting the message from the local database once it has been successfully consumed.</p>
+</li>
+</ol>
 </div>
 
 
