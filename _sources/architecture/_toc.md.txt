@@ -4,7 +4,7 @@
    :maxdepth: 2
    
    data_model
-   events
+   messaging/_toc
    cqrs
    ports_and_adapters
    rest_handler

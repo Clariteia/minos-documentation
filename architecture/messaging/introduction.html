@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Introduction &mdash; Minos Documentation  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Event" href="event.html" />
+    <link rel="prev" title="Messaging" href="_toc.html" />
+    <link href="../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Minos Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart/_toc.html">QuickStart</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../_toc.html">Architecture</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../data_model.html">Data Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="_toc.html">Messaging</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#message-publishing">Message Publishing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#message-receiving">Message Receiving</a></li>
+<li class="toctree-l3"><a class="reference internal" href="event.html">Event</a></li>
+<li class="toctree-l3"><a class="reference internal" href="command.html">Command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="command_reply.html">Command Reply</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../cqrs.html">CQRS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ports_and_adapters.html">Ports and Adapters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../rest_handler.html">REST Handler</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Minos Documentation</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../_toc.html">Architecture</a> &raquo;</li>
+        
+          <li><a href="_toc.html">Messaging</a> &raquo;</li>
+        
+      <li>Introduction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/architecture/messaging/introduction.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>The message is the minimum unit of communication between different actors or the same. An message is a change in state,
+or an update, like an item being placed in a shopping cart on an e-commerce website.
+Messages can either carry the state (the item purchased, its price, and a delivery address) or messages can be identifiers
+(a notification that an order was shipped).</p>
+<p>The general operation of the messages is as follows:</p>
+<p class="plantuml">
+<img src="../../_images/plantuml-1e5b7c82da81ceda3e6fba62cca965cb53915314.png" alt="&#64;startuml
+box &quot;Message Publishing - Microservice X&quot; #FFFFF3
+participant Broker
+database DB_A
+participant Producer
+end box
+database Kafka
+box &quot;Message Receiving - Microservice Y&quot; #F3FFF6
+participant Consumer
+database DB_B
+participant Handler
+end box
+
+autonumber
+--&gt; Broker: send
+
+Broker -&gt; DB_A: Store Message
+Broker -&gt; DB_A: Notify
+DB_A -&gt; Producer: Notify
+Producer --&gt; DB_A: Get Message
+Producer --&gt; Kafka: Publish Message
+Kafka &lt;-- Consumer: Receive Message
+Consumer -&gt; DB_B: Notify
+Consumer -&gt; DB_B: Store Message
+DB_B -&gt; Handler: Notify
+Handler --&gt; DB_B: Get Message
+Handler --&gt; :Trigger action
+&#64;enduml"/>
+</p>
+<p>Messages are stored in a PostgreSQL database before being sent to Kafka. This plays an important role as it allows
+messages to be transactional and fault tolerant (network errors, Kafka crashes…).</p>
+<p>Once the messages are successfully published in Kafka, they are removed from PostgreSQL and a notification
+is sent (using PostgreSQL <a class="reference external" href="https://www.postgresql.org/docs/9.1/sql-listen.html">LISTEN</a> /
+<a class="reference external" href="https://www.postgresql.org/docs/9.1/sql-notify.html">NOTIFY</a> ) to consumers so that they can consume it.
+(As you can see, this is done in a reactive way so that there does not have to be
+a periodic background process that checks every x seconds for new messages for example. This reduces the overall
+consumption of each microservice).</p>
+</div>
+<div class="section" id="message-publishing">
+<h1>Message Publishing<a class="headerlink" href="#message-publishing" title="Permalink to this headline">¶</a></h1>
+<p>It is responsible for <strong>storing</strong> the event in the <code class="docutils literal notranslate"><span class="pre">PostgreSQL</span></code> database, <strong>sending</strong> it to <code class="docutils literal notranslate"><span class="pre">Kafka</span></code>, <strong>deleting</strong> it from <code class="docutils literal notranslate"><span class="pre">PotgreSQL</span></code>
+(if it has been successfully sent to Kafka) and <strong>notifying</strong> the consumer that the event can be consumed.</p>
+<p>Let’s take a step-by-step look at what a Producer does:</p>
+<ol class="arabic">
+<li><p>Stores the <code class="docutils literal notranslate"><span class="pre">Event</span></code> in database</p>
+<p>The events have several <strong>attempts</strong> to be stored in the database (parameterizable). As an example, we set the number of
+retries to 3, if on the third attempt the event is not stored in the database because it is not a valid event, it
+is marked to not be processed any more times.</p>
+<p>&#64;startuml
+participant Event
+database DB
+autonumber
+Event -&gt; DB: Store Event
+&#64;enduml</p>
+</li>
+<li><p>Publish <code class="docutils literal notranslate"><span class="pre">Event</span></code> to <code class="docutils literal notranslate"><span class="pre">Kafka</span></code>
+The events have several <strong>attempts</strong> to be sent to Kafka (parameterizable). As an example, if we set the number of
+retries to 3, if on the third attempt the event is not sent to Kafka, it
+is marked to not be processed any more times.</p>
+<p>&#64;startuml
+participant Event
+database DB
+database Kafka</p>
+<p>autonumber
+Event -&gt; DB: Store Event
+DB -&gt;x Kafka: Publish Event
+DB -&gt;x Kafka: Publish Event
+DB -&gt;x Kafka: Publish Event
+DB -&gt; DB: Marked for no further processing
+&#64;enduml</p>
+</li>
+</ol>
+</div>
+<div class="section" id="message-receiving">
+<h1>Message Receiving<a class="headerlink" href="#message-receiving" title="Permalink to this headline">¶</a></h1>
+<p>TODO</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="event.html" class="btn btn-neutral float-right" title="Event" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="_toc.html" class="btn btn-neutral float-left" title="Messaging" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Clariteia.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
