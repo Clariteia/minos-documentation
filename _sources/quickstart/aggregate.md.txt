@@ -61,23 +61,89 @@ service:
 ...
 ```
 
+After being introduced how aggregate persistence is implemented in `minos`, the next sections provide a reference guide about how to use the storage operations step by step. One important thing to notice is that all of them are implemented using *awaitables*, so it's needed to know the [asyncio](https://docs.python.org/3/library/asyncio.html) basis to get the most of them. 
 
 #### Create
-TODO
+
+To create new aggregate instances, the best choice is to use the `create()` class method, which is similar to creating an instance directly calling the class constructor, but also stores a *creation event* into the *Repository*, so that the persistence is guaranteed. Then, the *Broker* will publish the *update event* on the `{$AGGREGATE_NAME}Created` topic. In addition to that, the retrieved instance has already set the auto-generated fields (`uuid`, `version`, etc.).
+
+For example, creating an `Exam` aggregate can be done with:
 
 ```python
 exam = await Exam.create("Mid-term Exam", timedelta(hours=1))
 ```
 
-#### Update
-TODO
+The `exam` instance will be like:
 
 ```python
-await exam.update(duration=exam.duration + timedelta(hours=1))
+Exam(
+    uuid=..., # generated uuid
+    version=1, 
+    created_at=..., # generated datetime 
+    updated_at=..., # generated datetime
+    name="Mid-termExam", 
+    duration=timedelta(hours=1),
+)
+```
+
+And the corresponding *creation event* will be like:
+
+```python
+AggregateDiff(
+    action=Action.CREATE,
+    name="src.aggregates.Exam",
+    uuid=..., # generated aggregate uuid
+    version=1,
+    created_at=..., # generated aggregate datetime
+    fields_diff=FieldDiffContainer(
+        name="Mid-termExam",
+        duration=timedelta(hours=1),
+    )
+)
 ```
 
 
-Additionally, the `Aggregate` class provides a `save()` method that automatically creates or updates the instance depending on if it's a new one or an already exising. Here is an example:
+#### Update
+
+The update operation modifies the value of some fields that are composing the aggregate. The way to do that is through the `update()` method, which get the set of values to be updated as named arguments, in which the given name matches with the corresponding field name. Internally, the method computes the fields difference between the previous and new fields and then stores an *update event* into the *Repository*, so that the persistence is guaranteed. Then, the *Broker* will publish the *update event* on the `{$AGGREGATE_NAME}Updated` topic.  In this case, also the `version` and `updated_at` fields are updated according to the new changes.
+
+For example, updating the `duration` field from the previously created `Exam` aggregate can be done with:
+
+```python
+await exam.update(duration=exam.duration + timedelta(minutes=30))
+```
+
+The `exam` instance will be like:
+
+```python
+Exam(
+    uuid=...,
+    version=2, # updated
+    created_at=..., 
+    updated_at=..., # updated
+    name="Mid-termExam",
+    duration=timedelta(hours=1, minutes=30), # updated
+)
+```
+
+And the corresponding *update event* will be like:
+
+```python
+AggregateDiff(
+    action=Action.UPDATE,
+    name="src.aggregates.Exam",
+    uuid=...,
+    version=2,
+    created_at=..., # generated datetime
+    fields_diff=FieldDiffContainer(
+        duration=timedelta(hours=1, minutes=30),
+    )
+)
+```
+
+
+Additionally, the `Aggregate` class provides a `save()` method that automatically *creates* or *updates* the instance depending on if it's a new one or an already exising. Here is an example:
+
 ```python
 exam = Exam("Mid-term Exam", timedelta(hours=1))
 await exam.save()
@@ -87,10 +153,25 @@ await exam.save()
 ```
 
 #### Delete
-TODO
 
+After being explained who to create and update instances, the missing operation is the deletion of them. In the `minos` framework it's implemented with a `delete` method, that internally stores a *deletion event* in to the *Repository* so that the persistence is guaranteed. Then, the *Broker* will publish the *update event* on the `{$AGGREGATE_NAME}Deleted` topic.
+
+For example, deleting an instance can be done with:
 ```python
 await exam.delete()
+```
+
+In this case, does not make any sense to continue working with the `exam` instance anymore, but the corresponding *delete event* will be like:
+
+```python
+AggregateDiff(
+    action=Action.DELETE,
+    name="src.aggregates.Exam",
+    uuid=...,
+    version=3,
+    created_at=..., # generated datetime
+    fields_diff=FieldDiffContainer.empty()
+)
 ```
 
 #### Get

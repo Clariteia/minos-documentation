@@ -240,20 +240,72 @@
 <span class="nn">...</span>
 </pre></div>
 </div>
+<p>After being introduced how aggregate persistence is implemented in <code class="docutils literal notranslate"><span class="pre">minos</span></code>, the next sections provide a reference guide about how to use the storage operations step by step. One important thing to notice is that all of them are implemented using <em>awaitables</em>, so it’s needed to know the <a class="reference external" href="https://docs.python.org/3/library/asyncio.html">asyncio</a> basis to get the most of them.</p>
 <div class="section" id="create">
 <h4>Create<a class="headerlink" href="#create" title="Permalink to this headline">¶</a></h4>
-<p>TODO</p>
+<p>To create new aggregate instances, the best choice is to use the <code class="docutils literal notranslate"><span class="pre">create()</span></code> class method, which is similar to creating an instance directly calling the class constructor, but also stores a <em>creation event</em> into the <em>Repository</em>, so that the persistence is guaranteed. Then, the <em>Broker</em> will publish the <em>update event</em> on the <code class="docutils literal notranslate"><span class="pre">{$AGGREGATE_NAME}Created</span></code> topic. In addition to that, the retrieved instance has already set the auto-generated fields (<code class="docutils literal notranslate"><span class="pre">uuid</span></code>, <code class="docutils literal notranslate"><span class="pre">version</span></code>, etc.).</p>
+<p>For example, creating an <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate can be done with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">exam</span> <span class="o">=</span> <span class="k">await</span> <span class="n">Exam</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;Mid-term Exam&quot;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">exam</span></code> instance will be like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Exam</span><span class="p">(</span>
+    <span class="n">uuid</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated uuid</span>
+    <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">created_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated datetime</span>
+    <span class="n">updated_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated datetime</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Mid-termExam&quot;</span><span class="p">,</span>
+    <span class="n">duration</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>And the corresponding <em>creation event</em> will be like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AggregateDiff</span><span class="p">(</span>
+    <span class="n">action</span><span class="o">=</span><span class="n">Action</span><span class="o">.</span><span class="n">CREATE</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;src.aggregates.Exam&quot;</span><span class="p">,</span>
+    <span class="n">uuid</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated aggregate uuid</span>
+    <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">created_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated aggregate datetime</span>
+    <span class="n">fields_diff</span><span class="o">=</span><span class="n">FieldDiffContainer</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Mid-termExam&quot;</span><span class="p">,</span>
+        <span class="n">duration</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="update">
 <h4>Update<a class="headerlink" href="#update" title="Permalink to this headline">¶</a></h4>
-<p>TODO</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="n">exam</span><span class="o">.</span><span class="n">duration</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<p>The update operation modifies the value of some fields that are composing the aggregate. The way to do that is through the <code class="docutils literal notranslate"><span class="pre">update()</span></code> method, which get the set of values to be updated as named arguments, in which the given name matches with the corresponding field name. Internally, the method computes the fields difference between the previous and new fields and then stores an <em>update event</em> into the <em>Repository</em>, so that the persistence is guaranteed. Then, the <em>Broker</em> will publish the <em>update event</em> on the <code class="docutils literal notranslate"><span class="pre">{$AGGREGATE_NAME}Updated</span></code> topic.  In this case, also the <code class="docutils literal notranslate"><span class="pre">version</span></code> and <code class="docutils literal notranslate"><span class="pre">updated_at</span></code> fields are updated according to the new changes.</p>
+<p>For example, updating the <code class="docutils literal notranslate"><span class="pre">duration</span></code> field from the previously created <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate can be done with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="n">exam</span><span class="o">.</span><span class="n">duration</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Additionally, the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> class provides a <code class="docutils literal notranslate"><span class="pre">save()</span></code> method that automatically creates or updates the instance depending on if it’s a new one or an already exising. Here is an example:</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">exam</span></code> instance will be like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Exam</span><span class="p">(</span>
+    <span class="n">uuid</span><span class="o">=...</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="c1"># updated</span>
+    <span class="n">created_at</span><span class="o">=...</span><span class="p">,</span>
+    <span class="n">updated_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># updated</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Mid-termExam&quot;</span><span class="p">,</span>
+    <span class="n">duration</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">),</span> <span class="c1"># updated</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>And the corresponding <em>update event</em> will be like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AggregateDiff</span><span class="p">(</span>
+    <span class="n">action</span><span class="o">=</span><span class="n">Action</span><span class="o">.</span><span class="n">UPDATE</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;src.aggregates.Exam&quot;</span><span class="p">,</span>
+    <span class="n">uuid</span><span class="o">=...</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">created_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated datetime</span>
+    <span class="n">fields_diff</span><span class="o">=</span><span class="n">FieldDiffContainer</span><span class="p">(</span>
+        <span class="n">duration</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">),</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Additionally, the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> class provides a <code class="docutils literal notranslate"><span class="pre">save()</span></code> method that automatically <em>creates</em> or <em>updates</em> the instance depending on if it’s a new one or an already exising. Here is an example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">exam</span> <span class="o">=</span> <span class="n">Exam</span><span class="p">(</span><span class="s2">&quot;Mid-term Exam&quot;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
 <span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 
@@ -264,8 +316,20 @@
 </div>
 <div class="section" id="delete">
 <h4>Delete<a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h4>
-<p>TODO</p>
+<p>After being explained who to create and update instances, the missing operation is the deletion of them. In the <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework it’s implemented with a <code class="docutils literal notranslate"><span class="pre">delete</span></code> method, that internally stores a <em>deletion event</em> in to the <em>Repository</em> so that the persistence is guaranteed. Then, the <em>Broker</em> will publish the <em>update event</em> on the <code class="docutils literal notranslate"><span class="pre">{$AGGREGATE_NAME}Deleted</span></code> topic.</p>
+<p>For example, deleting an instance can be done with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In this case, does not make any sense to continue working with the <code class="docutils literal notranslate"><span class="pre">exam</span></code> instance anymore, but the corresponding <em>delete event</em> will be like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AggregateDiff</span><span class="p">(</span>
+    <span class="n">action</span><span class="o">=</span><span class="n">Action</span><span class="o">.</span><span class="n">DELETE</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;src.aggregates.Exam&quot;</span><span class="p">,</span>
+    <span class="n">uuid</span><span class="o">=...</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">created_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated datetime</span>
+    <span class="n">fields_diff</span><span class="o">=</span><span class="n">FieldDiffContainer</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>

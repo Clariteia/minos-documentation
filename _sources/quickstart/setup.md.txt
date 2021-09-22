@@ -208,3 +208,7 @@ discovery:
   host: localhost
   port: 5567
 ```
+
+## API Gateway and Discovery
+
+[TODO: Describe integration with discovery.]
