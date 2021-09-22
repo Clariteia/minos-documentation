@@ -255,11 +255,16 @@ Now that we know the components involved, let's look at the complete flow:
 
 
 ## Event
-TODO
-
+An `Event` is a change in an `Aggregate`, so is composed of:
++ `AggregateDiff` class:
++ Topic: Is the name of the action. Example: `OrderCreated`, `OrderUpdated`, `OrderDeleted` ...
 
 ## Command
-TODO
+The commands have the necessary arguments to execute the command (i.e. the Request.content) as well as the identifier 
+of the response topic (where the result has to be sent).
 
 ## Command Reply
-TODO
+Command replies are the response of the command execution itself, they have with them the response itself, and a status
+code, so that whoever sent the command knows if the execution failed and if so why.
+
+Commands and their responses include the identifier of the saga they are being executed on.

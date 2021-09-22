@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>REST Handler &mdash; Minos Documentation  documentation</title>
+  <title>SAGA &mdash; Minos Documentation  documentation</title>
   
 
   
@@ -41,8 +41,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="SAGA" href="saga.html" />
-    <link rel="prev" title="Ports and Adapters" href="ports_and_adapters.html" />
+    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="prev" title="REST Handler" href="rest_handler.html" />
     <link href="../_static/style.css" rel="stylesheet" type="text/css">
 
 </head>
@@ -97,12 +97,13 @@
 <li class="toctree-l2"><a class="reference internal" href="messaging.html">Messaging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cqrs.html">CQRS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ports_and_adapters.html">Ports and Adapters</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">REST Handler</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#configured-through-decorators">Configured through decorators</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#request-parameter">Request parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rest_handler.html">REST Handler</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SAGA</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#context">Context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem">Problem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#solution">Solution</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="saga.html">SAGA</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
@@ -156,13 +157,13 @@
         
           <li><a href="_toc.html">Architecture</a> &raquo;</li>
         
-      <li>REST Handler</li>
+      <li>SAGA</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/architecture/rest_handler.md.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/architecture/saga.md.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -175,26 +176,27 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="rest-handler">
-<h1>REST Handler<a class="headerlink" href="#rest-handler" title="Permalink to this headline">¶</a></h1>
-<p>Minos being a microservices’ framework, it’s very important to support a REST port to access it. Thus, Minos REST
-Handler keeps a REST server active for clients to consume its endpoints.</p>
-<div class="section" id="configured-through-decorators">
-<h2>Configured through decorators<a class="headerlink" href="#configured-through-decorators" title="Permalink to this headline">¶</a></h2>
-<p>REST endpoints’ handlers are bind to endpoints using Python decorators, as in Flask, FastAPI and the like.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;/login&quot;</span><span class="p">,</span> <span class="s2">&quot;GET&quot;</span><span class="p">)</span>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">get_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
-    <span class="k">pass</span>
-</pre></div>
+  <div class="section" id="saga">
+<h1>SAGA<a class="headerlink" href="#saga" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="context">
+<h2>Context<a class="headerlink" href="#context" title="Permalink to this headline">¶</a></h2>
+<p>Minos framework apply <strong>Database per Service</strong> Pattern. Each service has its own database. Some business transactions,
+however, span multiple service so we need a mechanism to implement transactions that span services.
+For example, let’s imagine that we have an e-commerce store where customers have a credit limit.
+The application must ensure that a new order will not exceed the customer’s credit limit. Since <code class="docutils literal notranslate"><span class="pre">Orders</span></code> and <code class="docutils literal notranslate"><span class="pre">Customers</span></code>
+are in different databases owned by different services the application cannot simply use a local ACID transaction.</p>
 </div>
+<div class="section" id="problem">
+<h2>Problem<a class="headerlink" href="#problem" title="Permalink to this headline">¶</a></h2>
+<p>How do we implement transactions that affect several services?</p>
+<p>In our case, how do we make Order and Customer communicate?</p>
 </div>
-<div class="section" id="request-parameter">
-<h2>Request parameter<a class="headerlink" href="#request-parameter" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">request</span></code> parameter is a Minos Request object that contains the data sent through the network.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
-<span class="n">username</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
+<div class="section" id="solution">
+<h2>Solution<a class="headerlink" href="#solution" title="Permalink to this headline">¶</a></h2>
+<p>Implement each business transaction that spans multiple services is a saga. A saga is a sequence of local transactions.
+Each local transaction updates the database and publishes a message or event to trigger the next local transaction in
+the saga. If a local transaction fails because it violates a business rule then the saga executes a series of
+compensating transactions that undo the changes that were made by the preceding local transactions.</p>
 </div>
 </div>
 
@@ -204,8 +206,8 @@ Handler keeps a REST server active for clients to consume its endpoints.</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="saga.html" class="btn btn-neutral float-right" title="SAGA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="ports_and_adapters.html" class="btn btn-neutral float-left" title="Ports and Adapters" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="rest_handler.html" class="btn btn-neutral float-left" title="REST Handler" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

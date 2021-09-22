@@ -106,6 +106,7 @@
 <li class="toctree-l2"><a class="reference internal" href="cqrs.html">CQRS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ports_and_adapters.html">Ports and Adapters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rest_handler.html">REST Handler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="saga.html">SAGA</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
@@ -419,15 +420,22 @@ Handler -&gt; DB_B: Message marked for no further processing
 </div>
 <div class="section" id="event">
 <h2>Event<a class="headerlink" href="#event" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>An <code class="docutils literal notranslate"><span class="pre">Event</span></code> is a change in an <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code>, so is composed of:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> class:</p></li>
+<li><p>Topic: Is the name of the action. Example: <code class="docutils literal notranslate"><span class="pre">OrderCreated</span></code>, <code class="docutils literal notranslate"><span class="pre">OrderUpdated</span></code>, <code class="docutils literal notranslate"><span class="pre">OrderDeleted</span></code> …</p></li>
+</ul>
 </div>
 <div class="section" id="command">
 <h2>Command<a class="headerlink" href="#command" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>The commands have the necessary arguments to execute the command (i.e. the Request.content) as well as the identifier
+of the response topic (where the result has to be sent).</p>
 </div>
 <div class="section" id="command-reply">
 <h2>Command Reply<a class="headerlink" href="#command-reply" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>Command replies are the response of the command execution itself, they have with them the response itself, and a status
+code, so that whoever sent the command knows if the execution failed and if so why.</p>
+<p>Commands and their responses include the identifier of the saga they are being executed on.</p>
 </div>
 </div>
 
