@@ -30,6 +30,7 @@ include = [
 python = "^3.9"
 sphinx-rtd-theme = "^0.5.2"
 m2r2 = "^0.2.7"
+sphinxcontrib-plantuml = "^0.21"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
