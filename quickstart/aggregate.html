@@ -388,7 +388,8 @@
 </div>
 <div class="section" id="field-parsing">
 <h3>Field Parsing<a class="headerlink" href="#field-parsing" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
+<p>There are some specific cases in which the fields should be transformed according to specific rules before setting them into the aggregate instances. To do that, <code class="docutils literal notranslate"><span class="pre">minos</span></code> is able to automatically recognizes the methods that matches the <code class="docutils literal notranslate"><span class="pre">parse_${FIELD_NAME}(value:</span> <span class="pre">Any)</span> <span class="pre">-&gt;</span> <span class="pre">Any</span></code> and triggers them before setting the corresponding values.</p>
+<p>For example, a parsing method can be used to capitalize the <code class="docutils literal notranslate"><span class="pre">Exam</span></code>‘s name:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Exam</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
     <span class="o">...</span>
 
@@ -401,7 +402,8 @@
 </div>
 <div class="section" id="field-validation">
 <h3>Field Validation<a class="headerlink" href="#field-validation" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
+<p>Similar to field parsing, <code class="docutils literal notranslate"><span class="pre">minos</span></code> provides also the capabilities to implement custom validation methods if type checking is not enough. Concretely, the framework automatically recognizes the methods that matches the <code class="docutils literal notranslate"><span class="pre">validate_${FIELD_NAME}(value:</span> <span class="pre">Any)</span> <span class="pre">-&gt;</span> <span class="pre">bool</span></code> and triggers them before setting the corresponding values. If the validation result is evaluated to <code class="docutils literal notranslate"><span class="pre">False</span></code>, then a validation exception is raised and the value is not set.</p>
+<p>For example, a validation function can be used to require that <code class="docutils literal notranslate"><span class="pre">Exam</span></code>‘s name have at least three characters.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Exam</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
     <span class="o">...</span>
 

@@ -234,7 +234,10 @@ async for exam in Exam.find(condition, ordering, limit=10):
 ```
 
 ### Field Parsing
-TODO
+
+There are some specific cases in which the fields should be transformed according to specific rules before setting them into the aggregate instances. To do that, `minos` is able to automatically recognizes the methods that matches the `parse_${FIELD_NAME}(value: Any) -> Any` and triggers them before setting the corresponding values.
+
+For example, a parsing method can be used to capitalize the `Exam`'s name:
 
 ```python
 class Exam(Aggregate):
@@ -247,7 +250,10 @@ class Exam(Aggregate):
 ```
 
 ### Field Validation
-TODO
+
+Similar to field parsing, `minos` provides also the capabilities to implement custom validation methods if type checking is not enough. Concretely, the framework automatically recognizes the methods that matches the `validate_${FIELD_NAME}(value: Any) -> bool` and triggers them before setting the corresponding values. If the validation result is evaluated to `False`, then a validation exception is raised and the value is not set.
+
+For example, a validation function can be used to require that `Exam`'s name have at least three characters.
 
 ```python
 class Exam(Aggregate):
