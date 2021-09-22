@@ -32,7 +32,7 @@ class Exam(Aggregate):
 ```
 Then, an exam instance could be created as follows:
 ```python
-Exam("Mid-term Exam", timedelta(hours=1, minutes=30))
+Exam("Mid-term", timedelta(hours=1, minutes=30))
 ```
 
 One important thing to notice is that the `Aggregate` class also provides another additional fields related both with the identification and versioning that must not be provided by the developer (they are computed internally). The concrete fields are the following:
@@ -70,7 +70,7 @@ To create new aggregate instances, the best choice is to use the `create()` clas
 For example, creating an `Exam` aggregate can be done with:
 
 ```python
-exam = await Exam.create("Mid-term Exam", timedelta(hours=1))
+exam = await Exam.create("Mid-term", timedelta(hours=1))
 ```
 
 The `exam` instance will be like:
@@ -81,7 +81,7 @@ Exam(
     version=1, 
     created_at=..., # generated datetime 
     updated_at=..., # generated datetime
-    name="Mid-termExam", 
+    name="Mid-term", 
     duration=timedelta(hours=1),
 )
 ```
@@ -96,7 +96,7 @@ AggregateDiff(
     version=1,
     created_at=..., # generated aggregate datetime
     fields_diff=FieldDiffContainer(
-        name="Mid-termExam",
+        name="Mid-term",
         duration=timedelta(hours=1),
     )
 )
@@ -121,7 +121,7 @@ Exam(
     version=2, # updated
     created_at=..., 
     updated_at=..., # updated
-    name="Mid-termExam",
+    name="Mid-term",
     duration=timedelta(hours=1, minutes=30), # updated
 )
 ```
@@ -145,7 +145,7 @@ AggregateDiff(
 Additionally, the `Aggregate` class provides a `save()` method that automatically *creates* or *updates* the instance depending on if it's a new one or an already exising. Here is an example:
 
 ```python
-exam = Exam("Mid-term Exam", timedelta(hours=1))
+exam = Exam("Mid-term", timedelta(hours=1))
 await exam.save()
 
 exam.duration += timedelta(minutes=30)
@@ -154,7 +154,7 @@ await exam.save()
 
 #### Delete
 
-After being explained who to create and update instances, the missing operation is the deletion of them. In the `minos` framework it's implemented with a `delete` method, that internally stores a *deletion event* in to the *Repository* so that the persistence is guaranteed. Then, the *Broker* will publish the *update event* on the `{$AGGREGATE_NAME}Deleted` topic.
+After being explained who to create and update instances, the remaining operation is the deletion one. In the `minos` framework it's implemented with a `delete` method, that internally stores a *deletion event* in to the *Repository* so that the persistence is guaranteed. Then, the *Broker* will publish the *update event* on the `{$AGGREGATE_NAME}Deleted` topic.
 
 For example, deleting an instance can be done with:
 ```python
@@ -174,20 +174,58 @@ AggregateDiff(
 )
 ```
 
+One important thing to notice is that the `create`, `update` and `delete` operations are writing operations, so all of them generates some kind of event to be stored internally and notified to others so that these operations requires to use the *Repository* and *Broker* components. However, the following operations (`get` and `find`) are reading operations, so the execution of them does not generate any events. Also, as it will be explained later, these operations are related with `Aggregate` instances, so it's needed to use the *Snapshot* component, whose purpose is to provide a simple and efficient way to access them.
+
 #### Get
-TODO
+
+The way to obtain an instance based on its identifier is calling the `get` class method, which returns a single one, failing if it does not exist or is already deleted. In this case, the *Snapshot* guarantees a strong consistency respect to the *Repository* of events. 
 
 ```python
-identifier: UUID = ... 
-exam = await Exam.get(identifier)
+original = await Exam.create(...)
+
+identifier = original.uuid
+
+recovered = await Exam.get(identifier)
+
+assert original == recovered
 ```
+
+As the `get` class method only retrieves one instance at a time, a good option to retrieve multiple instances concurrently, together with the validation checks (existence and not already deletion) is to use `asyncio`'s `gather` function:
+
+```python
+from asyncio import (
+    gather,
+)
+
+uuids: list[UUID] = ...
+
+exams = await gather(*(Exam.get(uuid) for uuid in uuids))
+```
+
+If the validation checks are not needed, or can be performed directly at application level, a better option is to use the `find` class method.
 
 #### Find
 TODO
 
 ```python
-condition = ...
-async for exam in Exam.find(condition):
+from datetime import (
+    date,
+    timedelta,
+)
+from minos.common import (
+    Condition,
+    Ordering,
+)
+
+
+condition = Condition.AND(
+    Condition.GREATED_EQUAL("created_at", date.today() - timedelta(days=7)), 
+    Condition.EQUAL("name", "Mid-term")
+)
+
+ordering = Ordering.DESC("duration")
+
+async for exam in Exam.find(condition, ordering, limit=10):
     print(exam)
 ```
 
