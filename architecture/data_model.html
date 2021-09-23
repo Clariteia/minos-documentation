@@ -192,11 +192,23 @@
 <h1>Data Model<a class="headerlink" href="#data-model" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>As every software system, <code class="docutils literal notranslate"><span class="pre">Minos</span></code> encourages the use of a particular data model that restricts how the system
+works. <code class="docutils literal notranslate"><span class="pre">Minos</span></code> follows the analysis patterns proposed in Domain Driven Design (DDD), which have more than 20 years of
+proven validity to tackle software complexity.</p>
 </div>
 <div class="section" id="entity">
 <h2>Entity<a class="headerlink" href="#entity" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>An <code class="docutils literal notranslate"><span class="pre">entity</span></code> is the minimum level of abstraction possible. It represents a simple business concept that owns its
+attributes and the functions that transform them. It can be something like a wheel of a car or the car itself.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Entities</span></code> are responsible for making the system speak the ubiquitous language of the business. This means the terms
+used for both operations and attributes must convey meaning of the system.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TicketEntry</span><span class="p">(</span><span class="n">Entity</span><span class="p">):</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">unit_price</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">quantity</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">product</span><span class="p">:</span> <span class="n">ModelRef</span><span class="p">[</span><span class="n">Product</span><span class="p">]</span>
+</pre></div>
+</div>
 <div class="section" id="entityset">
 <h3>EntitySet<a class="headerlink" href="#entityset" title="Permalink to this headline">¶</a></h3>
 <p>TODO</p>
@@ -204,7 +216,14 @@
 </div>
 <div class="section" id="valueobject">
 <h2>ValueObject<a class="headerlink" href="#valueobject" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">value</span> <span class="pre">object</span></code> is a concept of the domain whose identity is given by the whole set of its attributes’ values. For
+example, an address does not have an identity other than its street, number and so, and if any of them are modified, a
+new address is actually being created. Thus, <code class="docutils literal notranslate"><span class="pre">Minos</span></code> encourages <code class="docutils literal notranslate"><span class="pre">value</span> <span class="pre">object</span></code>‘s immutability</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Address</span><span class="p">(</span><span class="n">ValueObject</span><span class="p">):</span>
+    <span class="n">street</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">street_no</span><span class="p">:</span> <span class="nb">int</span>
+</pre></div>
+</div>
 <div class="section" id="valueobjectset">
 <h3>ValueObjectSet<a class="headerlink" href="#valueobjectset" title="Permalink to this headline">¶</a></h3>
 <p>TODO</p>
@@ -212,10 +231,24 @@
 </div>
 <div class="section" id="aggregate">
 <h2>Aggregate<a class="headerlink" href="#aggregate" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>An Aggregate is a composition of entities that work together in order to reach a complex goal. One of the main
+objectives of such constructions is to encapsulate business complexity behind an <code class="docutils literal notranslate"><span class="pre">aggregate</span></code> root, which is an <code class="docutils literal notranslate"><span class="pre">entity</span></code>
+taking that role. Thus, no message will be sent to each particular entity within the <code class="docutils literal notranslate"><span class="pre">aggregate</span></code>, but rather the
+aggregate root will handle and route each request.</p>
+<p>Because of this reason, there is a one to one correspondence among and <code class="docutils literal notranslate"><span class="pre">aggregate</span></code> and a microservice. This means a
+microservice will encapsulate all the logic related to a business concept and provide the API for all the <code class="docutils literal notranslate"><span class="pre">aggregate</span></code>
+components.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Ticket</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
+    <span class="n">code</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">total_price</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">entries</span><span class="p">:</span> <span class="n">EntitySet</span><span class="p">[</span><span class="n">TicketEntry</span><span class="p">]</span>
+</pre></div>
+</div>
 <div class="section" id="aggregateref">
 <h3>AggregateRef<a class="headerlink" href="#aggregateref" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
+<p>No software system consists just of one microservice. Microservices always come in groups and collaborate to provide the
+expected behaviour. For that reason, <code class="docutils literal notranslate"><span class="pre">Minos</span></code> provides an <code class="docutils literal notranslate"><span class="pre">AggregateRef</span></code> concept, which defines the dependencies that a
+microservice has with other microservices.</p>
 </div>
 <div class="section" id="modelref">
 <h3>ModelRef<a class="headerlink" href="#modelref" title="Permalink to this headline">¶</a></h3>
