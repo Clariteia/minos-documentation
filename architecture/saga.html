@@ -103,16 +103,13 @@
 <li class="toctree-l3"><a class="reference internal" href="#problem">Problem</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#solution">Solution</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#saga-definition">SAGA definition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#steps">Steps</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#definitions">Definitions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#saga-structure">SAGA structure</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#step"><code class="docutils literal notranslate"><span class="pre">step()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#invoke-participant"><code class="docutils literal notranslate"><span class="pre">invoke_participant()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#with-compensation"><code class="docutils literal notranslate"><span class="pre">with_compensation()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#on-reply"><code class="docutils literal notranslate"><span class="pre">on_reply()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#commit"><code class="docutils literal notranslate"><span class="pre">commit()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#saga-manager">SAGA Manager</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#query-building">Query building</a></li>
 </ul>
 </li>
@@ -243,35 +240,163 @@ SAGA --&gt; &quot;add_to_cart()&quot;: Success
 </p>
 </div>
 </div>
-<div class="section" id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<div class="section" id="definitions">
+<h2>Definitions<a class="headerlink" href="#definitions" title="Permalink to this headline">¶</a></h2>
+<p>It is important to differentiate the components involved, which are broadly speaking:</p>
+<ul>
+<li><p>SAGA</p>
+<p>It is the <strong>definition of the different operations</strong> involved in the transaction in an orderly and hierarchical manner.
+For example, to create an order we must reserve the products (microservice Product), generate the ticket or order
+summary (microservice Ticket) and make the payment (microservice Payment). So the saga ensures that operations are
+executed in a set manner, i.e. first the product is reserved, then the ticket is generated and finally the payment
+is created.</p>
+</li>
+<li><p>SAGA Manager</p>
+<blockquote>
+<div><p>On the other hand, the saga manager is in charge of coordinating the execution of the SAGA’s.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="figure align-center">
+<p class="plantuml">
+<img src="../_images/plantuml-94973d2a285384c95d49dd9e6da35effb21d7321.png" alt="&#64;startuml
+participant &quot;SAGA Manager&quot;
+participant &quot;SAGA A&quot;
+participant &quot;SAGA B&quot;
+participant &quot;SAGA C&quot;
+
+&quot;SAGA Manager&quot; -&gt; &quot;SAGA A&quot;: Run SAGA A
+&quot;SAGA Manager&quot; -&gt; &quot;SAGA B&quot;: Run SAGA B
+&quot;SAGA Manager&quot; -&gt; &quot;SAGA C&quot;: Run SAGA C
+&quot;SAGA Manager&quot; --&gt; : ...
+&#64;enduml"/>
+</p>
 </div>
-<div class="section" id="saga-definition">
-<h2>SAGA definition<a class="headerlink" href="#saga-definition" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="steps">
-<h2>Steps<a class="headerlink" href="#steps" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<div class="section" id="saga-structure">
+<h2>SAGA structure<a class="headerlink" href="#saga-structure" title="Permalink to this headline">¶</a></h2>
+<p>The saga consists of steps and are those that define the operations to be performed in an orderly way to communicate with other
+services. These steps normally contain the call to the corresponding service (<code class="docutils literal notranslate"><span class="pre">.invoke_participant(&quot;CreateOrder&quot;)</span></code>) and
+optionally a compensation (<code class="docutils literal notranslate"><span class="pre">.with_compensation(&quot;DeleteOrder&quot;,</span> <span class="pre">delete_order_callback)</span></code>) in case an error occurs or the
+operation cannot be performed by the business logic. It also optionally has a function in charge of
+receiving the response from the invoked service (which is used in case the response has to be processed).</p>
+<p>For a SAGA instance to be valid, a <code class="docutils literal notranslate"><span class="pre">step</span></code>, <code class="docutils literal notranslate"><span class="pre">invoke_participant</span></code> and <code class="docutils literal notranslate"><span class="pre">commit</span></code> are required. So the minimum structure of
+a SAGA is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Saga</span><span class="p">()</span>
+<span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;CreateOrder&quot;</span><span class="p">)</span>
+<span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
 <div class="section" id="step">
 <h3><code class="docutils literal notranslate"><span class="pre">step()</span></code><a class="headerlink" href="#step" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
+<p>As mentioned above, the <code class="docutils literal notranslate"><span class="pre">step()</span></code> is the minimum unit for a saga to work.</p>
+<p>The step is used to define an operation and separate it from the rest, so a SAGA is usually a series of steps. Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">CREATE_ORDER</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Saga</span><span class="p">(</span><span class="s2">&quot;CreateOrder&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">step</span><span class="p">()</span>
+       <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;CreateTicket&quot;</span><span class="p">,</span> <span class="n">_create_ticket</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">on_reply</span><span class="p">(</span><span class="s2">&quot;ticket&quot;</span><span class="p">,</span> <span class="n">_process_ticket_entries</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">step</span><span class="p">()</span>
+       <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;PurchaseProducts&quot;</span><span class="p">,</span> <span class="n">_purchase_products</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">with_compensation</span><span class="p">(</span><span class="s2">&quot;PurchaseProducts&quot;</span><span class="p">,</span> <span class="n">_revert_purchase_products</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">step</span><span class="p">()</span>
+       <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;CreatePayment&quot;</span><span class="p">,</span> <span class="n">_payment</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">on_reply</span><span class="p">(</span><span class="s2">&quot;payment&quot;</span><span class="p">,</span> <span class="n">_get_payment</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">_create_commit_callback</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
 </div>
-<div class="section" id="invoke-participant">
-<h3><code class="docutils literal notranslate"><span class="pre">invoke_participant()</span></code><a class="headerlink" href="#invoke-participant" title="Permalink to this headline">¶</a></h3>
+<p>The step in turn contains the following operations:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">invoke_participant()</span></code></p>
 <p>TODO</p>
-</div>
-<div class="section" id="with-compensation">
-<h3><code class="docutils literal notranslate"><span class="pre">with_compensation()</span></code><a class="headerlink" href="#with-compensation" title="Permalink to this headline">¶</a></h3>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">with_compensation()</span></code></p>
 <p>TODO</p>
-</div>
-<div class="section" id="on-reply">
-<h3><code class="docutils literal notranslate"><span class="pre">on_reply()</span></code><a class="headerlink" href="#on-reply" title="Permalink to this headline">¶</a></h3>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">on_reply()</span></code></p>
 <p>TODO</p>
+</li>
+</ul>
 </div>
 <div class="section" id="commit">
 <h3><code class="docutils literal notranslate"><span class="pre">commit()</span></code><a class="headerlink" href="#commit" title="Permalink to this headline">¶</a></h3>
 <p>TODO</p>
+</div>
+</div>
+<div class="section" id="saga-manager">
+<h2>SAGA Manager<a class="headerlink" href="#saga-manager" title="Permalink to this headline">¶</a></h2>
+<p>Saga manager is in charge of coordinating the execution of the saga or resuming the execution from disk or memory.</p>
+<p>Previously we have seen how to define a SAGA, now we are going to see how to execute it.</p>
+<p>Saga manager accepts the following parameters:</p>
+<ul>
+<li><p>SAGA Definition: Required</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">CREATE_ORDER</span> <span class="o">=</span> <span class="p">(</span>
+  <span class="n">Saga</span><span class="p">()</span>
+  <span class="o">.</span><span class="n">step</span><span class="p">()</span>
+  <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;CreateOrder&quot;</span><span class="p">)</span>
+  <span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pause_on_disk</span></code>: Optional (default <code class="docutils literal notranslate"><span class="pre">False</span></code>)</p>
+<p>If it is paused on disk (<code class="docutils literal notranslate"><span class="pre">pause_on_disk=True</span></code>) it means that it is asynchronous, else if it is not paused on disk (<code class="docutils literal notranslate"><span class="pre">pause_on_disk=False</span></code>) it means that it is synchronous.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">raise_on_error</span></code>: Optional (default <code class="docutils literal notranslate"><span class="pre">True</span></code>)
+Indicates what behaviour the SAGA should take in case of an error, being able to set it to <code class="docutils literal notranslate"><span class="pre">False</span></code> so that in case of
+error no exception is thrown and other operations can be performed after the SAGA.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">return_execution</span></code>: Optional (default <code class="docutils literal notranslate"><span class="pre">True</span></code>)</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">return_execution=True</span></code>, the process that launched the SAGA would be waiting until the execution is finished,
+being able to evaluate the result of this execution.
+If <code class="docutils literal notranslate"><span class="pre">pause_on_disk=False</span></code>, the process that launched the SAGA receives the UUID of the SAGA execution and does not
+wait for it to finish.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">context</span></code> Optional</p>
+<p>Parameters that you want to send to SAGA in order to be able to operate with them. Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">context</span><span class="o">=</span><span class="n">SagaContext</span><span class="p">(</span>
+  <span class="n">cart_uuid</span><span class="o">=</span><span class="n">cart_uuid</span><span class="p">,</span>
+  <span class="n">customer_uuid</span><span class="o">=</span><span class="n">customer_uuid</span><span class="p">,</span>
+  <span class="n">payment_detail</span><span class="o">=</span><span class="n">payment_detail</span><span class="p">,</span>
+  <span class="n">shipment_detail</span><span class="o">=</span><span class="n">shipment_detail</span><span class="p">,</span>
+<span class="p">),</span>
+</pre></div>
+</div>
+<p>Within the SAGA you can access them in the following way:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">example_function</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">SagaContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SagaContext</span><span class="p">:</span>
+  <span class="n">customer</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s2">&quot;customer_uuid&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Now we can see an example on how to run a <code class="docutils literal notranslate"><span class="pre">SAGA</span></code> with <code class="docutils literal notranslate"><span class="pre">SAGA</span> <span class="pre">Manager</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">CREATE_ORDER</span> <span class="o">=</span> <span class="p">(</span>
+<span class="n">Saga</span><span class="p">(</span><span class="s2">&quot;CreateOrder&quot;</span><span class="p">)</span>
+<span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;CreateTicket&quot;</span><span class="p">)</span>
+<span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;CreatePayment&quot;</span><span class="p">)</span>
+<span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="k">class</span> <span class="nc">OrderCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
+  <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;/orders&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">)</span>
+  <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;CreateOrder&quot;</span><span class="p">)</span>
+  <span class="k">async</span> <span class="k">def</span> <span class="nf">create_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+    <span class="n">saga</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">saga_manager</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="n">CREATE_ORDER</span><span class="p">,</span>
+        <span class="n">context</span><span class="o">=</span><span class="n">SagaContext</span><span class="p">(</span>
+            <span class="n">cart_uuid</span><span class="o">=</span><span class="n">cart_uuid</span><span class="p">,</span>
+            <span class="n">customer_uuid</span><span class="o">=</span><span class="n">customer_uuid</span><span class="p">,</span>
+            <span class="n">payment_detail</span><span class="o">=</span><span class="n">payment_detail</span><span class="p">,</span>
+            <span class="n">shipment_detail</span><span class="o">=</span><span class="n">shipment_detail</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+</pre></div>
 </div>
 </div>
 <div class="section" id="query-building">
