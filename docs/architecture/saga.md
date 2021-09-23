@@ -53,7 +53,19 @@ this product to be reserved for us.
 ## Parameters
 TODO
 
+## SAGA definition
+
 ## Steps
+TODO
+###  `step()`
+TODO
+### `invoke_participant()`
+TODO
+### `with_compensation()`
+TODO
+### `on_reply()`
+TODO
+### `commit()`
 TODO
 
 ## Query building
