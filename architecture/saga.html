@@ -102,6 +102,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#context">Context</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#problem">Problem</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#solution">Solution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 </ul>
@@ -197,6 +198,39 @@ are in different databases owned by different services the application cannot si
 Each local transaction updates the database and publishes a message or event to trigger the next local transaction in
 the saga. If a local transaction fails because it violates a business rule then the saga executes a series of
 compensating transactions that undo the changes that were made by the preceding local transactions.</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>In the following example we are going to see how the saga is for the case of adding a <code class="docutils literal notranslate"><span class="pre">Product</span></code> to the <code class="docutils literal notranslate"><span class="pre">Cart</span></code>, we want
+this product to be reserved for us.</p>
+<div class="figure align-center">
+<p class="plantuml">
+<img src="../_images/plantuml-93b78402ffabf127070bf39b9d6b01fad057cc20.png" alt="&#64;startuml
+actor User
+box &quot;Microservice Cart&quot; #FFFFF3
+participant &quot;add_to_cart()&quot;
+participant SAGA
+end box
+
+box &quot;Microservice Product&quot; #F3FFF6
+participant Product
+end box
+
+autonumber
+User --&gt; &quot;add_to_cart()&quot;: Add item to cart
+&quot;add_to_cart()&quot; -&gt; SAGA: Execute
+SAGA -&gt; Product: Try to reserve the product
+Product -&gt; SAGA: Product reserved
+SAGA -&gt; SAGA: Add product to the cart
+note left
+In the commit method,
+add item to cart
+end note
+SAGA -&gt; &quot;add_to_cart()&quot;: Success
+&quot;add_to_cart()&quot; --&gt; User: Response
+&#64;enduml"/>
+</p>
+</div>
 </div>
 </div>
 
