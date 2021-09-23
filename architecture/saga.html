@@ -109,6 +109,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#commit"><code class="docutils literal notranslate"><span class="pre">commit()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#sagacontext">SagaContext</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#saga-manager">SAGA Manager</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#query-building">Query building</a></li>
 </ul>
@@ -309,21 +310,85 @@ a SAGA is:</p>
 </div>
 <p>The step in turn contains the following operations:</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">invoke_participant()</span></code></p>
-<p>TODO</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">invoke_participant(COMMAND,</span> <span class="pre">Callback</span> <span class="pre">function[Optional])</span></code></p>
+<p>It is responsible for invoking a <code class="docutils literal notranslate"><span class="pre">Command</span></code> normally located in another microservice.</p>
+<p>The callback function is optional and is used to prepare data or information to be sent with the <code class="docutils literal notranslate"><span class="pre">Command</span></code>.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TicketQuery</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;TicketQuery&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;cart_uuid&quot;</span><span class="p">:</span> <span class="n">UUID</span><span class="p">})</span>
+
+<span class="k">def</span> <span class="nf">_create_ticket</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">SagaContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Model</span><span class="p">:</span>
+  <span class="n">cart_uuid</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s2">&quot;cart_uuid&quot;</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">TicketQuery</span><span class="p">(</span><span class="n">cart_uuid</span><span class="p">)</span>
+
+<span class="n">CREATE_ORDER</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Saga</span><span class="p">(</span><span class="s2">&quot;CreateOrder&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">step</span><span class="p">()</span>
+       <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;CreateTicket&quot;</span><span class="p">,</span> <span class="n">_create_ticket</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">on_reply</span><span class="p">(</span><span class="s2">&quot;ticket&quot;</span><span class="p">,</span> <span class="n">_process_ticket_entries</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">_create_commit_callback</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="c1"># The execution of the SAGA is omitted in this example ...</span>
+</pre></div>
+</div>
 </li>
-<li><p><code class="docutils literal notranslate"><span class="pre">with_compensation()</span></code></p>
-<p>TODO</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">on_reply(Name,</span> <span class="pre">Callback</span> <span class="pre">function)</span></code> - <strong>Optional</strong></p>
+<p>on reply is optional and is used if necessary to handle the result of the <code class="docutils literal notranslate"><span class="pre">invoke_participant</span></code>.
+Important - The callback function of on_reply does not have access to the SagaContext. This is intentional since
+on_reply is only used to process the data. On <code class="docutils literal notranslate"><span class="pre">return</span></code> it is automatically stored in SagaContext.
+Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_get_payment</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Aggregate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UUID</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">uuid</span>
+
+<span class="n">CREATE_ORDER</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Saga</span><span class="p">(</span><span class="s2">&quot;CreateOrder&quot;</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">step</span><span class="p">()</span>
+      <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;CreatePayment&quot;</span><span class="p">,</span> <span class="n">_payment</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">on_reply</span><span class="p">(</span><span class="s2">&quot;payment&quot;</span><span class="p">,</span> <span class="n">_get_payment</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">_commit</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="c1"># The execution of the SAGA is omitted in this example ...</span>
+</pre></div>
+</div>
 </li>
-<li><p><code class="docutils literal notranslate"><span class="pre">on_reply()</span></code></p>
-<p>TODO</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">with_compensation(COMMAND,</span> <span class="pre">Callback</span> <span class="pre">function[Optional])</span></code> - <strong>Optional</strong></p>
+<blockquote>
+<div><p>In the event of an error in any of the operations, the compensation of the corresponding step and those of the
+previous steps, if any, will be executed.</p>
+<p>The callback function is optional and is used to prepare data or information to be sent with the <code class="docutils literal notranslate"><span class="pre">Command</span></code>.</p>
+</div></blockquote>
 </li>
 </ul>
+<div class="figure align-center">
+<p class="plantuml">
+<img src="../_images/plantuml-e216fd26c5db56c59e8a5bfb604295eaa25f0300.png" alt="&#64;startuml
+participant &quot;SAGA Manager&quot;
+participant &quot;SAGA CreateOrder&quot;
+box &quot;Microservice Product&quot; #FFFFF3
+participant &quot;PurchaseProducts&quot;
+end box
+box &quot;Microservice Payment&quot; #F3FFF6
+participant &quot;CreatePayment&quot;
+end box
+
+autonumber
+&quot;SAGA Manager&quot; -&gt; &quot;SAGA CreateOrder&quot;: Run
+&quot;SAGA CreateOrder&quot; -&gt; &quot;PurchaseProducts&quot;: Purchase Products (Step 1)
+&quot;PurchaseProducts&quot; --&gt; &quot;SAGA CreateOrder&quot;: Products Purchased (Step 1)
+&quot;SAGA CreateOrder&quot; -&gt;x &quot;CreatePayment&quot;: Create Payment ERROR (Step 2)
+&quot;SAGA CreateOrder&quot; -&gt; &quot;PurchaseProducts&quot;: Compensation (Step 1)
+&quot;SAGA CreateOrder&quot; &lt;-- &quot;PurchaseProducts&quot;: Compensation OK (Step 1)
+&#64;enduml"/>
+</p>
+</div>
 </div>
 <div class="section" id="commit">
 <h3><code class="docutils literal notranslate"><span class="pre">commit()</span></code><a class="headerlink" href="#commit" title="Permalink to this headline">¶</a></h3>
 <p>TODO</p>
 </div>
+</div>
+<div class="section" id="sagacontext">
+<h2>SagaContext<a class="headerlink" href="#sagacontext" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
 </div>
 <div class="section" id="saga-manager">
 <h2>SAGA Manager<a class="headerlink" href="#saga-manager" title="Permalink to this headline">¶</a></h2>

@@ -118,18 +118,85 @@ CREATE_ORDER = (
 ```
 
 The step in turn contains the following operations:
-+ `invoke_participant()`
++ `invoke_participant(COMMAND, Callback function[Optional])`
   
-  TODO
-+ `with_compensation()`
+  It is responsible for invoking a `Command` normally located in another microservice.
   
-  TODO
-+ `on_reply()`
+  The callback function is optional and is used to prepare data or information to be sent with the `Command`.
 
-  TODO
+  Example:
+  ```python
+    TicketQuery = ModelType.build("TicketQuery", {"cart_uuid": UUID})
+  
+    def _create_ticket(context: SagaContext) -> Model:
+      cart_uuid = context["cart_uuid"]
+      return TicketQuery(cart_uuid)
+  
+    CREATE_ORDER = (
+        Saga("CreateOrder")
+        .step()
+           .invoke_participant("CreateTicket", _create_ticket)
+           .on_reply("ticket", _process_ticket_entries)
+        .commit(_create_commit_callback)
+    )
+    # The execution of the SAGA is omitted in this example ...
+  ```
+
++ `on_reply(Name, Callback function)` - **Optional**
+
+  on reply is optional and is used if necessary to handle the result of the `invoke_participant`.
+  Important - The callback function of on_reply does not have access to the SagaContext. This is intentional since 
+  on_reply is only used to process the data. On `return` it is automatically stored in SagaContext.
+  Example:
+  ```python
+    def _get_payment(value: Aggregate) -> UUID:
+        return value.uuid
+  
+    CREATE_ORDER = (
+        Saga("CreateOrder")
+          .step()
+          .invoke_participant("CreatePayment", _payment)
+          .on_reply("payment", _get_payment)
+        .commit(_commit)
+    )
+    # The execution of the SAGA is omitted in this example ...
+  ```
+
+
++ `with_compensation(COMMAND, Callback function[Optional])` - **Optional**
+  
+   In the event of an error in any of the operations, the compensation of the corresponding step and those of the 
+   previous steps, if any, will be executed. 
+  
+   The callback function is optional and is used to prepare data or information to be sent with the `Command`.
+
+.. uml::
+  :align: center
+
+  @startuml
+  participant "SAGA Manager"
+  participant "SAGA CreateOrder"
+  box "Microservice Product" #FFFFF3
+  participant "PurchaseProducts"
+  end box
+  box "Microservice Payment" #F3FFF6
+  participant "CreatePayment"
+  end box
+
+  autonumber
+  "SAGA Manager" -> "SAGA CreateOrder": Run
+  "SAGA CreateOrder" -> "PurchaseProducts": Purchase Products (Step 1)
+  "PurchaseProducts" --> "SAGA CreateOrder": Products Purchased (Step 1)
+  "SAGA CreateOrder" ->x "CreatePayment": Create Payment ERROR (Step 2)
+  "SAGA CreateOrder" -> "PurchaseProducts": Compensation (Step 1)
+  "SAGA CreateOrder" <-- "PurchaseProducts": Compensation OK (Step 1)
+  @enduml
 
 
 ### `commit()`
+TODO
+
+## SagaContext
 TODO
 
 ## SAGA Manager
