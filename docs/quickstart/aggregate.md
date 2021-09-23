@@ -264,9 +264,11 @@ class Exam(Aggregate):
 ```
 
 
-
 ## Defining the `Subject` reference...
-TODO
+
+After being described the basics about aggregates and how to perform operations with them, the next natural step to be able to create complex data models is to learn how to create relations with another aggregates. One important thing to notice here is that whereas multiple *Aggregate* classes can coexist within the same microservice, the recommended strategy is to keep only one *Aggregate* per microservice. Then, assuming that it's needed to create a relation from one to another, `minos` provides the concept of *Aggregate References*, which allow to define the schema of the external *Aggregate*, so that the business logic within that microservice will be able to support on its fields.  
+
+For example, if it's needed to relate the `Exam` aggregate with a supposed `Subject` aggregate defined on another microservice then using the `AggregateRef` will be the solution. One of the reasons why we need to have a reference with `Subject` could be to use the `title` field for some kind of query defined in the `QueryService` (which is described on :doc:`/quickstart/query`).
 
 ```python
 from minos.common import (
@@ -278,9 +280,31 @@ class Subject(AggregateRef):
     title: str
 ```
 
-## Defining the `Question` entity... 
-TODO
+After being defined the `AggregateRef`, the next step is to create the relation with the `Aggregate` one. The way to do that is using the `ModelRef` type hint. 
+The reason why it exists is because *Aggregate References* should be stored as references on the database, but in some cases, it's needed to be resolved to use some of their fields.  The `ModelRef` is mostly defined as:
+```python
+ModelRef[T] = Union[T, UUID] # in which T is an AggregateRef type 
+```
 
+Then, the `Exam` aggregate turns into:
+```python
+from minos.common import (
+    ModelRef,
+)
+
+
+class Exam(Aggregate):
+    name: str
+    duration: timedelta
+    subject: ModelRef[Subject]
+    # questions: ...
+```
+
+## Defining the `Question` entity... 
+
+One of the most important parts of an exam is the set of questions. Here, the `Question` will be modeled as an `Entity` class. These classes are characterised for being parts of the `Aggregate` one, with the extra capability to be uniquely identified. To know more about the `Entity` class, it's recommended to read the [TODO: link to architecture]. 
+
+In this case, for shake or simplicity, the `Question` entity will only have two attributes: a `title`, which will contain the question to be answered, and a set of `choices` to be picked. But initially, `choices` will be ignored:
 ```python
 from minos.common import (
     Entity,
@@ -291,6 +315,12 @@ class Question(Entity):
     title: str
     # choices: ...
 ```
+
+After being defined the `Question` entity, the next step is to integrate it into the `Exam` aggregate. In this case, it's needed to have a special feature, which is multiplicity. 
+
+A possible solution could be to use a `list` or something similar so that `questions: list[Question]` resolves the problem, but this approach has a caveat, that is the event publication. Using the `list` class, the `questions` field is treated as a standard field and the generated events will publish the full list of questions also when only one of them has a small change. In some cases this could be the needed behaviour, but another one can be used.
+
+[TODO: describe entityset]
 
 ## Defining the `Choice` value object...
 TODO
