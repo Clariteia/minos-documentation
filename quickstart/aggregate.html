@@ -269,8 +269,16 @@
     <span class="n">created_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated aggregate datetime</span>
     <span class="n">fields_diff</span><span class="o">=</span><span class="n">FieldDiffContainer</span><span class="p">(</span>
         <span class="p">[</span>
-            <span class="n">FieldDiff</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Mid-term&quot;</span><span class="p">),</span>
-            <span class="n">FieldDiff</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span>
+            <span class="n">FieldDiff</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                <span class="n">type_</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="s2">&quot;Mid-term&quot;</span>
+            <span class="p">),</span>
+            <span class="n">FieldDiff</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span>
+                <span class="n">type_</span><span class="o">=</span><span class="n">timedelta</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="p">),</span>
         <span class="p">]</span>
     <span class="p">)</span>
 <span class="p">)</span>
@@ -304,7 +312,11 @@
     <span class="n">created_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated datetime</span>
     <span class="n">fields_diff</span><span class="o">=</span><span class="n">FieldDiffContainer</span><span class="p">(</span>
         <span class="p">[</span>
-            <span class="n">FieldDiff</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">)),</span>
+            <span class="n">FieldDiff</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span>
+                <span class="n">type_</span><span class="o">=</span><span class="n">timedelta</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+            <span class="p">),</span>
         <span class="p">]</span>
     <span class="p">)</span>
 <span class="p">)</span>
@@ -493,7 +505,12 @@ The reason why it exists is because <em>Aggregate References</em> should be stor
     <span class="n">created_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated datetime</span>
     <span class="n">fields_diff</span><span class="o">=</span><span class="n">FieldDiffContainer</span><span class="p">(</span>
         <span class="p">[</span>
-            <span class="n">IncrementalFieldDiff</span><span class="p">(</span><span class="s2">&quot;questions&quot;</span><span class="p">,</span> <span class="n">Question</span><span class="p">,</span> <span class="n">Question</span><span class="p">(</span><span class="s2">&quot;What is 1 + 1?&quot;</span><span class="p">),</span> <span class="n">Action</span><span class="o">.</span><span class="n">CREATE</span><span class="p">),</span>
+            <span class="n">IncrementalFieldDiff</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;questions&quot;</span><span class="p">,</span>
+                <span class="n">type_</span><span class="o">=</span><span class="n">Question</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">Question</span><span class="p">(</span><span class="s2">&quot;What is 1 + 1?&quot;</span><span class="p">),</span>
+                <span class="n">action</span><span class="o">=</span><span class="n">Action</span><span class="o">.</span><span class="n">CREATE</span>
+            <span class="p">),</span>
         <span class="p">]</span>
     <span class="p">)</span>
 <span class="p">)</span>
@@ -547,10 +564,10 @@ The reason why it exists is because <em>Aggregate References</em> should be stor
     <span class="n">fields_diff</span><span class="o">=</span><span class="n">FieldDiffContainer</span><span class="p">(</span>
         <span class="p">[</span>
             <span class="n">IncrementalFieldDiff</span><span class="p">(</span>
-                <span class="s2">&quot;questions&quot;</span><span class="p">,</span>
-                <span class="n">Question</span><span class="p">,</span>
-                <span class="n">Question</span><span class="p">(</span><span class="s2">&quot;What is 1 + 1?&quot;</span><span class="p">,</span> <span class="n">ValueObjectSet</span><span class="p">([</span><span class="n">Answer</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="n">Answer</span><span class="p">(</span><span class="s2">&quot;5&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)])),</span>
-                <span class="n">Action</span><span class="o">.</span><span class="n">UPDATE</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;questions&quot;</span><span class="p">,</span>
+                <span class="n">type_</span><span class="o">=</span><span class="n">Question</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">Question</span><span class="p">(</span><span class="s2">&quot;What is 1 + 1?&quot;</span><span class="p">,</span> <span class="n">ValueObjectSet</span><span class="p">([</span><span class="n">Answer</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="n">Answer</span><span class="p">(</span><span class="s2">&quot;5&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)])),</span>
+                <span class="n">action</span><span class="o">=</span><span class="n">Action</span><span class="o">.</span><span class="n">UPDATE</span>
             <span class="p">),</span>
         <span class="p">]</span>
     <span class="p">)</span>
