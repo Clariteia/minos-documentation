@@ -44,8 +44,7 @@ TODO
 
 ## Aggregate
 
-An Aggregate is a composition of entities that work together in order to reach a complex goal. One of the main
-objectives of such constructions is to encapsulate business complexity behind an `aggregate` root, which is an `entity`
+An Aggregate is a composition of entities that work together in order to reach a complex goal. One of the main objectives of suchc onstructions is to encapsulate business complexity behind an `aggregate` root, which is an `entity`
 taking that role. Thus, no message will be sent to each particular entity within the `aggregate`, but rather the
 aggregate root will handle and route each request.
 
@@ -64,12 +63,29 @@ class Ticket(Aggregate):
 
 No software system consists just of one microservice. Microservices always come in groups and collaborate to provide the
 expected behaviour. For that reason, `Minos` provides an `AggregateRef` concept, which defines the dependencies that a
-microservice has with other microservices. 
+microservice has with others of its ecosystem.
+
+Mainly, defining an `AggregateRef` serves as a mean to compact dependencies' data within the `Aggregate` itself. Thus
+
+```python
+class Ticket(AggregateRef):
+    total_price: float
+    entries: EntitySet[TicketEntry]
+```
 
 ### ModelRef
 
-TODO
+A `ModelRef` connects an `AggregateRef` to the `Aggregate` root. When a microservice subscribes to the `Aggregate`, the `ModelRef` is responsible for bringing back the content of the `AggregateRef`, put everything together and publish it. Thus, the event does not publish just an UUID but an object with the structure of the `AggregateRef`.
 
-### Migrations
+For example, let's consider the following `Aggregate` structure:
 
-TODO
+```python
+class Order(Aggregate):
+    ticket: ModelRef[Ticket]
+
+class Ticket(AggregateRef):
+    total_price: float
+    entries: EntitySet[TicketEntry]
+```
+
+If a service is subscribed to the `OrderCreated` event, it will receive the Ticket with its total_price` and entries instead of just the UUID associated to that Ticket.
