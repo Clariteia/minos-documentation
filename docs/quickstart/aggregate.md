@@ -60,6 +60,18 @@ service:
     event_broker: minos.networks.EventBroker
     repository: minos.common.PostgreSqlRepository
     snapshot: minos.common.PostgreSqlSnapshot
+repository:
+  database: exam_db
+  user: minos
+  password: min0s
+  host: localhost
+  port: 5432
+snapshot:
+  database: exam_db
+  user: minos
+  password: min0s
+  host: localhost
+  port: 5432
 ...
 ```
 
