@@ -95,8 +95,12 @@
 <li class="toctree-l2"><a class="reference internal" href="setup.html">Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aggregate.html">Modeling the Domain: Aggregates</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Exposing Operations: Command Service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setting-up-the-service">Setting up the service!</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exposing-exam-creation">Exposing <code class="docutils literal notranslate"><span class="pre">Exam</span></code> creation…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-exam-questions">Adding <code class="docutils literal notranslate"><span class="pre">Exam</span></code> questions!</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deleting-exam">Deleting <code class="docutils literal notranslate"><span class="pre">Exam</span></code>…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#why-not-to-implement-get-commands">Why not to implement <code class="docutils literal notranslate"><span class="pre">get</span></code> commands?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="query.html">Exposing Information: Query Service</a></li>
@@ -178,13 +182,90 @@
             
   <div class="section" id="exposing-operations-command-service">
 <h1>Exposing Operations: Command Service<a class="headerlink" href="#exposing-operations-command-service" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="setting-up-the-service">
+<h2>Setting up the service!<a class="headerlink" href="#setting-up-the-service" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># config.yml</span>
+
+<span class="nt">rest</span><span class="p">:</span>
+  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.0.0.0</span>
+  <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">8082</span>
+<span class="nt">broker</span><span class="p">:</span>
+  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
+  <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">9092</span>
+  <span class="nt">queue</span><span class="p">:</span>
+    <span class="nt">database</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">exam_db</span>
+    <span class="nt">user</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos</span>
+    <span class="nt">password</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">min0s</span>
+    <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
+    <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5432</span>
+    <span class="nt">records</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1000</span>
+    <span class="nt">retry</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="nt">queries</span><span class="p">:</span>
+  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.ExamQueryService</span>
+<span class="nt">commands</span><span class="p">:</span>
+  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.ExamCommandService</span>
+<span class="nn">...</span>
+</pre></div>
+</div>
+<p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/commands.py&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CommandService</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Request</span><span class="p">,</span>
+    <span class="n">Response</span><span class="p">,</span>
+    <span class="n">enroute</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..aggregates</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Exam</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ExamCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exam Command Service class&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="exposing-exam-creation">
+<h2>Exposing <code class="docutils literal notranslate"><span class="pre">Exam</span></code> creation…<a class="headerlink" href="#exposing-exam-creation" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">enroute</span><span class="p">,</span>
+    <span class="n">Response</span><span class="p">,</span>
+    <span class="n">Request</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ExamCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;/exams&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">)</span>
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;CreateExam&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">create_exam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+
+        <span class="n">exam</span> <span class="o">=</span> <span class="k">await</span> <span class="n">Exam</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;subject&quot;</span><span class="p">],</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span> <span class="n">EntitySet</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">exam</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="adding-exam-questions">
+<h2>Adding <code class="docutils literal notranslate"><span class="pre">Exam</span></code> questions!<a class="headerlink" href="#adding-exam-questions" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
 </div>
-<div class="section" id="example">
-<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="deleting-exam">
+<h2>Deleting <code class="docutils literal notranslate"><span class="pre">Exam</span></code>…<a class="headerlink" href="#deleting-exam" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
+</div>
+<div class="section" id="why-not-to-implement-get-commands">
+<h2>Why not to implement <code class="docutils literal notranslate"><span class="pre">get</span></code> commands?<a class="headerlink" href="#why-not-to-implement-get-commands" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+</div>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/commands.py&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="p">(</span>
