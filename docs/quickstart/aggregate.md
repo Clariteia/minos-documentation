@@ -99,8 +99,16 @@ AggregateDiff(
     created_at=..., # generated aggregate datetime
     fields_diff=FieldDiffContainer(
         [
-            FieldDiff("name", str, "Mid-term"),
-            FieldDiff("duration", timedelta, timedelta(hours=1)),
+            FieldDiff(
+                name="name", 
+                type_=str, 
+                value="Mid-term"
+            ),
+            FieldDiff(
+                name="duration", 
+                type_=timedelta, 
+                value=timedelta(hours=1)
+            ),
         ]
     )
 )
@@ -141,7 +149,11 @@ AggregateDiff(
     created_at=..., # generated datetime
     fields_diff=FieldDiffContainer(
         [
-            FieldDiff("duration", timedelta, timedelta(hours=1, minutes=30)),
+            FieldDiff(
+                name="duration", 
+                type_=timedelta, 
+                value=timedelta(hours=1, minutes=30)
+            ),
         ]
     )
 )
@@ -359,7 +371,12 @@ AggregateDiff(
     created_at=..., # generated datetime
     fields_diff=FieldDiffContainer(
         [
-            IncrementalFieldDiff("questions", Question, Question("What is 1 + 1?"), Action.CREATE),    
+            IncrementalFieldDiff(
+                name="questions", 
+                type_=Question, 
+                value=Question("What is 1 + 1?"), 
+                action=Action.CREATE
+            ),    
         ]
     )
 )
@@ -423,10 +440,10 @@ AggregateDiff(
     fields_diff=FieldDiffContainer(
         [
             IncrementalFieldDiff(
-                "questions", 
-                Question, 
-                Question("What is 1 + 1?", ValueObjectSet([Answer("2", True), Answer("5", False)])), 
-                Action.UPDATE
+                name="questions", 
+                type_=Question, 
+                value=Question("What is 1 + 1?", ValueObjectSet([Answer("2", True), Answer("5", False)])), 
+                action=Action.UPDATE
             ),    
         ]
     )
