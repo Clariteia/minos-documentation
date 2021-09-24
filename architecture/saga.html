@@ -102,16 +102,15 @@
 <li class="toctree-l3"><a class="reference internal" href="#context">Context</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#problem">Problem</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#solution">Solution</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#definitions">Definitions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-does-it-work">How does it work?</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#saga-structure">SAGA structure</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#step"><code class="docutils literal notranslate"><span class="pre">step()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#commit"><code class="docutils literal notranslate"><span class="pre">commit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#commit-callback-function-optional"><code class="docutils literal notranslate"><span class="pre">commit(Callback</span> <span class="pre">function[Optional])</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#sagacontext">SagaContext</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#saga-manager">SAGA Manager</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#query-building">Query building</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
 </ul>
 </li>
 </ul>
@@ -207,9 +206,6 @@ are in different databases owned by different services the application cannot si
 Each local transaction updates the database and publishes a message or event to trigger the next local transaction in
 the saga. If a local transaction fails because it violates a business rule then the saga executes a series of
 compensating transactions that undo the changes that were made by the preceding local transactions.</p>
-</div>
-<div class="section" id="example">
-<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
 <p>In the following example we are going to see how the saga is for the case of adding a <code class="docutils literal notranslate"><span class="pre">Product</span></code> to the <code class="docutils literal notranslate"><span class="pre">Cart</span></code>, we want
 this product to be reserved for us.</p>
 <div class="figure align-center">
@@ -245,14 +241,14 @@ SAGA --&gt; &quot;add_to_cart()&quot;: Success
 <h2>Definitions<a class="headerlink" href="#definitions" title="Permalink to this headline">¶</a></h2>
 <p>It is important to differentiate the components involved, which are broadly speaking:</p>
 <ul>
-<li><p>SAGA</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">SAGA</span></code></p>
 <p>It is the <strong>definition of the different operations</strong> involved in the transaction in an orderly and hierarchical manner.
 For example, to create an order we must reserve the products (microservice Product), generate the ticket or order
 summary (microservice Ticket) and make the payment (microservice Payment). So the saga ensures that operations are
 executed in a set manner, i.e. first the product is reserved, then the ticket is generated and finally the payment
 is created.</p>
 </li>
-<li><p>SAGA Manager</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">SAGA</span> <span class="pre">Manager</span></code></p>
 <blockquote>
 <div><p>On the other hand, the saga manager is in charge of coordinating the execution of the SAGA’s.</p>
 </div></blockquote>
@@ -273,6 +269,40 @@ participant &quot;SAGA C&quot;
 &#64;enduml"/>
 </p>
 </div>
+</div>
+<div class="section" id="how-does-it-work">
+<h2>How does it work?<a class="headerlink" href="#how-does-it-work" title="Permalink to this headline">¶</a></h2>
+<p>The communication between the microservices is done using <code class="docutils literal notranslate"><span class="pre">Command</span></code> and waiting for the corresponding <code class="docutils literal notranslate"><span class="pre">CommandReply</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CommandBroker</span></code> is used to send the Command and ahere are 2 ways to receive the answer:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">CommandReplyHandler</span></code> if SAGA was paused on disk or</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DynamicHandler</span></code> if was paused on memmory.</p></li>
+</ul>
+<div class="figure align-center">
+<p class="plantuml">
+<img src="../_images/plantuml-73173705dab14120357b4af3fa93c9b60929acaa.png" alt="&#64;startuml
+box &quot;Microservice Order&quot; #F3FFF6
+participant &quot;SAGA Manager&quot;
+participant &quot;SAGA CreateOrder&quot;
+participant CommandBroker
+participant CommandReplyHandler
+participant DynamicHandler
+end box
+box &quot;Microservice Product&quot; #FFFFF3
+participant &quot;PurchaseProducts&quot;
+end box
+
+
+autonumber
+&quot;SAGA Manager&quot; -&gt; &quot;SAGA CreateOrder&quot;: Run
+&quot;SAGA CreateOrder&quot; -&gt; CommandBroker: Command
+CommandBroker -&gt; &quot;PurchaseProducts&quot;: Send Command
+CommandReplyHandler &lt;-- &quot;PurchaseProducts&quot;: Receive CommandReply (If SAGA paused on disk)
+DynamicHandler &lt;-- &quot;PurchaseProducts&quot;: Receive CommandReply (If SAGA paused on memmory)
+&#64;enduml"/>
+</p>
+</div>
+<p>You can see more details about the exchange of messages in the <a class="reference external" href="./messaging.html">messaging</a> section.</p>
 </div>
 <div class="section" id="saga-structure">
 <h2>SAGA structure<a class="headerlink" href="#saga-structure" title="Permalink to this headline">¶</a></h2>
@@ -313,6 +343,8 @@ a SAGA is:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">invoke_participant(COMMAND,</span> <span class="pre">Callback</span> <span class="pre">function[Optional])</span></code></p>
 <p>It is responsible for invoking a <code class="docutils literal notranslate"><span class="pre">Command</span></code> normally located in another microservice.</p>
 <p>The callback function is optional and is used to prepare data or information to be sent with the <code class="docutils literal notranslate"><span class="pre">Command</span></code>.</p>
+<p>In the following example you can see how to build the query where you would send <code class="docutils literal notranslate"><span class="pre">cart_uuid</span></code> together with the
+<code class="docutils literal notranslate"><span class="pre">CreateTicket</span></code> command.</p>
 <p>Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TicketQuery</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;TicketQuery&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;cart_uuid&quot;</span><span class="p">:</span> <span class="n">UUID</span><span class="p">})</span>
 
@@ -324,8 +356,17 @@ a SAGA is:</p>
     <span class="n">Saga</span><span class="p">(</span><span class="s2">&quot;CreateOrder&quot;</span><span class="p">)</span>
     <span class="o">.</span><span class="n">step</span><span class="p">()</span>
        <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;CreateTicket&quot;</span><span class="p">,</span> <span class="n">_create_ticket</span><span class="p">)</span>
-       <span class="o">.</span><span class="n">on_reply</span><span class="p">(</span><span class="s2">&quot;ticket&quot;</span><span class="p">,</span> <span class="n">_process_ticket_entries</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">_create_commit_callback</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="c1"># The execution of the SAGA is omitted in this example ...</span>
+</pre></div>
+</div>
+<p>Another simple example without passing data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">CREATE_ORDER</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Saga</span><span class="p">(</span><span class="s2">&quot;CreateOrder&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">step</span><span class="p">()</span>
+       <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;CreateTicket&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 <span class="p">)</span>
 <span class="c1"># The execution of the SAGA is omitted in this example ...</span>
 </pre></div>
@@ -355,6 +396,7 @@ Example:</p>
 <div><p>In the event of an error in any of the operations, the compensation of the corresponding step and those of the
 previous steps, if any, will be executed.</p>
 <p>The callback function is optional and is used to prepare data or information to be sent with the <code class="docutils literal notranslate"><span class="pre">Command</span></code>.</p>
+<p>(If you need to send data you can construct the query in the same way as in the invoke_perticipant callback above.)</p>
 </div></blockquote>
 </li>
 </ul>
@@ -381,14 +423,45 @@ autonumber
 </p>
 </div>
 </div>
-<div class="section" id="commit">
-<h3><code class="docutils literal notranslate"><span class="pre">commit()</span></code><a class="headerlink" href="#commit" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
+<div class="section" id="commit-callback-function-optional">
+<h3><code class="docutils literal notranslate"><span class="pre">commit(Callback</span> <span class="pre">function[Optional])</span></code><a class="headerlink" href="#commit-callback-function-optional" title="Permalink to this headline">¶</a></h3>
+<p>The commit is primarily used to indicate the end of the SAGA definition and optionally to execute a callback function
+once all the steps have been executed correctly.</p>
+<ul>
+<li><p>The commit can be empty. What I would do is simply store the result.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_get_payment</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Aggregate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UUID</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">uuid</span>
+
+<span class="n">CREATE_ORDER</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Saga</span><span class="p">(</span><span class="s2">&quot;CreateOrder&quot;</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">step</span><span class="p">()</span>
+      <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;CreatePayment&quot;</span><span class="p">,</span> <span class="n">_payment</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">on_reply</span><span class="p">(</span><span class="s2">&quot;payment&quot;</span><span class="p">,</span> <span class="n">_get_payment</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="c1"># The execution of the SAGA is omitted in this example ...</span>
+</pre></div>
 </div>
+</li>
+<li><p>Or callback function can be called. It is normally used to perform operations with Aggregates. For example:
+Create the order, update it …</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_commit</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">SagaContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SagaContext</span><span class="p">:</span>
+    <span class="c1"># Some logic, normally Aggregate operations ...</span>
+    <span class="k">return</span> <span class="n">SagaContext</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>
+
+<span class="n">CREATE_ORDER</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Saga</span><span class="p">(</span><span class="s2">&quot;CreateOrder&quot;</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">step</span><span class="p">()</span>
+      <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;CreatePayment&quot;</span><span class="p">,</span> <span class="n">_payment</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">on_reply</span><span class="p">(</span><span class="s2">&quot;payment&quot;</span><span class="p">,</span> <span class="n">_get_payment</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">_commit</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="c1"># The execution of the SAGA is omitted in this example ...</span>
+</pre></div>
 </div>
-<div class="section" id="sagacontext">
-<h2>SagaContext<a class="headerlink" href="#sagacontext" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+</li>
+</ul>
+</div>
 </div>
 <div class="section" id="saga-manager">
 <h2>SAGA Manager<a class="headerlink" href="#saga-manager" title="Permalink to this headline">¶</a></h2>
@@ -419,13 +492,14 @@ being able to evaluate the result of this execution.
 If <code class="docutils literal notranslate"><span class="pre">pause_on_disk=False</span></code>, the process that launched the SAGA receives the UUID of the SAGA execution and does not
 wait for it to finish.</p>
 </li>
-<li><p><code class="docutils literal notranslate"><span class="pre">context</span></code> Optional</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">context</span></code> Optional
+Normally when launching a SAGA, you need to pass some parameters to be able to work with them or once the SAGA is
+running to store the result of the step and this is where SagaContext is involved.</p>
 <p>Parameters that you want to send to SAGA in order to be able to operate with them. Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">context</span><span class="o">=</span><span class="n">SagaContext</span><span class="p">(</span>
-  <span class="n">cart_uuid</span><span class="o">=</span><span class="n">cart_uuid</span><span class="p">,</span>
-  <span class="n">customer_uuid</span><span class="o">=</span><span class="n">customer_uuid</span><span class="p">,</span>
-  <span class="n">payment_detail</span><span class="o">=</span><span class="n">payment_detail</span><span class="p">,</span>
-  <span class="n">shipment_detail</span><span class="o">=</span><span class="n">shipment_detail</span><span class="p">,</span>
+  <span class="n">customer</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
+  <span class="n">cart</span><span class="o">=</span><span class="mi">83274892374</span><span class="p">,</span>
+  <span class="o">...</span>
 <span class="p">),</span>
 </pre></div>
 </div>
@@ -464,9 +538,64 @@ wait for it to finish.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="query-building">
-<h2>Query building<a class="headerlink" href="#query-building" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p>Get all users</p>
+<p>(please dont use similar in production, you know ;) )</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">GET_USER</span> <span class="o">=</span> <span class="p">(</span>
+ <span class="n">Saga</span><span class="p">()</span>
+ <span class="o">.</span><span class="n">step</span><span class="p">()</span>
+ <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;GetUsers&quot;</span><span class="p">)</span>
+ <span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>We run SAGA with SagaManager as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">saga</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">saga_manager</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">GET_USER</span><span class="p">)</span>
+
+<span class="c1"># get results:</span>
+<span class="n">users</span> <span class="o">=</span> <span class="n">saga</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">])</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>In invoke_participant SAGA will send the Command <code class="docutils literal notranslate"><span class="pre">GetUsers</span></code>. It will be received by the microservice that has that
+command defined. Logically it should be the <strong>microservice User</strong>.</p>
+</li>
+<li><p>Get specific user</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">UserQuery</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;UserQuery&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;user_id&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">})</span>
+
+<span class="k">def</span> <span class="nf">_user</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">SagaContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Model</span><span class="p">:</span>
+   <span class="n">user_id</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span>
+   <span class="k">return</span> <span class="n">UserQuery</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+
+<span class="n">GET_USER</span> <span class="o">=</span> <span class="p">(</span>
+ <span class="n">Saga</span><span class="p">()</span>
+ <span class="o">.</span><span class="n">step</span><span class="p">()</span>
+ <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;GetUsers&quot;</span><span class="p">,</span> <span class="n">_user</span><span class="p">)</span>
+ <span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>We run SAGA with SagaManager as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">saga</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">saga_manager</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+     <span class="n">GET_USER</span><span class="p">,</span>
+     <span class="n">context</span><span class="o">=</span><span class="n">SagaContext</span><span class="p">(</span>
+         <span class="n">user_id</span><span class="o">=</span><span class="mi">1234</span><span class="p">,</span>
+     <span class="p">),</span>
+ <span class="p">)</span>
+
+<span class="c1"># get results:</span>
+<span class="n">user</span> <span class="o">=</span> <span class="n">saga</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">])</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>In invoke_participant SAGA will send the Command <code class="docutils literal notranslate"><span class="pre">GetUser</span></code> passing the query containing user_id. It will be received by the microservice that has that
+command defined. Logically it should be the <strong>microservice User</strong>.</p>
+</li>
+</ol>
 </div>
 </div>
 
