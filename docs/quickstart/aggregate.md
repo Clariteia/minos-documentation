@@ -96,8 +96,10 @@ AggregateDiff(
     version=1,
     created_at=..., # generated aggregate datetime
     fields_diff=FieldDiffContainer(
-        name="Mid-term",
-        duration=timedelta(hours=1),
+        [
+            FieldDiff("name", str, "Mid-term"),
+            FieldDiff("duration", timedelta, timedelta(hours=1)),
+        ]
     )
 )
 ```
@@ -136,7 +138,9 @@ AggregateDiff(
     version=2,
     created_at=..., # generated datetime
     fields_diff=FieldDiffContainer(
-        duration=timedelta(hours=1, minutes=30),
+        [
+            FieldDiff("duration", timedelta, timedelta(hours=1, minutes=30)),
+        ]
     )
 )
 ```
@@ -320,7 +324,46 @@ After being defined the `Question` entity, the next step is to integrate it into
 
 A possible solution could be to use a `list` or something similar so that `questions: list[Question]` resolves the problem, but this approach has a caveat, that is the event publication. Using the `list` class, the `questions` field is treated as a standard field and the generated events will publish the full list of questions also when only one of them has a small change. In some cases this could be the needed behaviour, but another one can be used.
 
-[TODO: describe entityset]
+The `EntitySet` class is the best way to store *Entities* in most cases, as it provides *incremental storing capabilities* that provides a big speedup when a big amount of them is stored. In terms of usage, the `EntitySet` inherits from the [collections.abc.MutableSet](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableSet) base class, so it can be used as a standard Python's `set`, so that includes the common `add`, `remove`, `__contains__`, etc. methods, but are specially adapted for `Entity` instances. 
+
+In any case, the real advantage to use the `EntitySet` are the *incremental storing capabilities*, that is, instead of storing the full entity set after each `Aggregate.update` call, only the creations, updates or deletions are stored (and also published over the event system). 
+
+For example, if the `EntitySet` is chosen for the `questions` field, the `Exam` aggregate turns into:
+```python
+from minos.common import (
+    EntitySet,
+)
+
+
+class Exam(Aggregate):
+    name: str
+    duration: timedelta
+    subject: ModelRef[Subject]
+    questions: EntitySet[Question]
+```
+Inserting a `Question`, is as simple as inserting it into any `set`:
+
+```python
+exam.questions.add(Question("What is 1 + 1?"))
+```
+
+The generated event when `await exam.save()` is called in this case is similar to:
+
+```python
+AggregateDiff(
+    action=Action.UPDATE,
+    name="src.aggregates.Exam",
+    uuid=...,
+    version=3,
+    created_at=..., # generated datetime
+    fields_diff=FieldDiffContainer(
+        [
+            IncrementalFieldDiff("questions", Question, Question("What is 1 + 1?"), Action.CREATE),    
+        ]
+    )
+)
+```
+
 
 ## Defining the `Choice` value object...
 TODO
