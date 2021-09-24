@@ -30,6 +30,8 @@ class Exam(Aggregate):
     # subject: ...
     # questions: ...
 ```
+**Important**: The `timedelta` support is being on development stage (https://github.com/Clariteia/minos_microservice_common/issues/312). It's recommended to use the `int` type until the development is completed.
+
 Then, an exam instance could be created as follows:
 ```python
 Exam("Mid-term", timedelta(hours=1, minutes=30))
@@ -306,18 +308,17 @@ class Exam(Aggregate):
 
 ## Defining the `Question` entity... 
 
-One of the most important parts of an exam is the set of questions. Here, the `Question` will be modeled as an `Entity` class. These classes are characterised for being parts of the `Aggregate` one, with the extra capability to be uniquely identified. To know more about the `Entity` class, it's recommended to read the [TODO: link to architecture]. 
+One of the most important parts of an exam is the set of questions. Here, the `Question` will be modeled as an `Entity` descendant. The *Entity* classes are characterised for being parts of the `Aggregate` one, with the extra capability to be uniquely identified based on an internal identifier. To know more about the `Entity` class, it's recommended to read the [TODO: link to architecture]. 
 
-In this case, for shake or simplicity, the `Question` entity will only have two attributes: a `title`, which will contain the question to be answered, and a set of `choices` to be picked. But initially, `choices` will be ignored:
+In this case, for sake or simplicity, the `Question` entity will only have two attributes: a `title`, which will contain the question to be answered, and a set of `answers` to be picked. But initially, `answers` will be ignored:
 ```python
 from minos.common import (
     Entity,
-    ValueObjectSet,
 )
 
 class Question(Entity):
     title: str
-    # choices: ...
+    # answers: ...
 ```
 
 After being defined the `Question` entity, the next step is to integrate it into the `Exam` aggregate. In this case, it's needed to have a special feature, which is multiplicity. 
@@ -365,8 +366,11 @@ AggregateDiff(
 ```
 
 
-## Defining the `Choice` value object...
-TODO
+## Defining the `Answer` value object...
+
+The last part before the `Exam` aggregate is ready is to define the available answers for the questions. In this case, the `Answer` class will be defined as a `ValueObject` descendant. *Value Object* classes are characterised by both qualities: They are immutable and the way to identify them is through their field values. To know more about this concept it's recommended to read the [TODO: link to architecture].
+
+In this case, the `Answer` class will be composed of two simple attributes, the `text` containing the answer itself and a `correct` boolean flag. This strategy will allow to extend the implementation to multiple-answer questions without so much effort.
 
 ```python
 from minos.common import (
@@ -374,14 +378,64 @@ from minos.common import (
 )
 
 
-class Choice(ValueObject):
+class Answer(ValueObject):
     text: str
     correct: bool
 ```
 
+Similarly to the `Entity` case, to store a collection of `Value Object` instances, it's possible to use the `list`, but the best choice for most cases is the `ValueObjectSet` class, that also heirs from the [collections.abc.MutableSet](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableSet) base class. The main difference between `ValueObjectSet` and `EntitySet` is that in this case the hashing is performed from the field values of each `ValueObject` instance, instead of simply using the `Entity`'s unique identifier for obvious reasons.
+
+
+Then, if the `ValueObjectSet` is chosen as the collection of answers, the `Question` class will turns on:
+
+```python
+from minos.common import (
+    Entity,
+    ValueObjectSet,
+)
+
+class Question(Entity):
+    title: str
+    answers: ValueObject[Answer]
+```
+
+Now, the way to create `Answer` instances is as follows:
+```python
+question_identifier: UUID = ...
+question = exam.questions.get(question_identifier)
+
+question.answers.add(Answer("2", True))
+question.answers.add(Answer("5", False))
+
+await exam.save()
+```
+
+One important thing to not in this case is how `AggregateDiff` works in cases like this one. Here, a `ValueObjectSet` (with incremental capabilities) is used inside `Entity` instances stored inside an `EntitySet`, that is one of the fields of the `Aggregate` class. So, this is a special case because the incremental capabilities only work at first field level respect to the `Aggregate`. 
+
+In this case, the generated `AggregateDiff` will be like:
+```python
+AggregateDiff(
+    action=Action.UPDATE,
+    name="src.aggregates.Exam",
+    uuid=...,
+    version=3,
+    created_at=..., # generated datetime
+    fields_diff=FieldDiffContainer(
+        [
+            IncrementalFieldDiff(
+                "questions", 
+                Question, 
+                Question("What is 1 + 1?", ValueObjectSet([Answer("2", True), Answer("5", False)])), 
+                Action.UPDATE
+            ),    
+        ]
+    )
+)
+```
 
 ## Summary
-TODO
+
+After being described step by step the main functionalities of the `Aggregate` class, and also the commonly used classes that relate with, here is a full snapshot of the resulting `src/aggregates.py` file:
 
 ```python
 """src/aggregates.py"""
@@ -422,10 +476,10 @@ class Subject(AggregateRef):
 
 class Question(Entity):
     title: str
-    choices: ValueObjectSet[Choice]
+    answers: ValueObjectSet[Answer]
 
 
-class Choice(ValueObject):
+class Answer(ValueObject):
     text: str
     correct: bool
 
