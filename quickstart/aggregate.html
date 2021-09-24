@@ -103,7 +103,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#defining-the-subject-reference">Defining the <code class="docutils literal notranslate"><span class="pre">Subject</span></code> reference…</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#defining-the-question-entity">Defining the <code class="docutils literal notranslate"><span class="pre">Question</span></code> entity…</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#defining-the-choice-value-object">Defining the <code class="docutils literal notranslate"><span class="pre">Choice</span></code> value object…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#defining-the-answer-value-object">Defining the <code class="docutils literal notranslate"><span class="pre">Answer</span></code> value object…</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
 </li>
@@ -213,6 +213,7 @@
     <span class="c1"># questions: ...</span>
 </pre></div>
 </div>
+<p><strong>Important</strong>: The <code class="docutils literal notranslate"><span class="pre">timedelta</span></code> support is being on development stage (<a class="reference external" href="https://github.com/Clariteia/minos_microservice_common/issues/312">https://github.com/Clariteia/minos_microservice_common/issues/312</a>). It’s recommended to use the <code class="docutils literal notranslate"><span class="pre">int</span></code> type until the development is completed.</p>
 <p>Then, an exam instance could be created as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Exam</span><span class="p">(</span><span class="s2">&quot;Mid-term&quot;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">))</span>
 </pre></div>
@@ -451,16 +452,15 @@ The reason why it exists is because <em>Aggregate References</em> should be stor
 </div>
 <div class="section" id="defining-the-question-entity">
 <h2>Defining the <code class="docutils literal notranslate"><span class="pre">Question</span></code> entity…<a class="headerlink" href="#defining-the-question-entity" title="Permalink to this headline">¶</a></h2>
-<p>One of the most important parts of an exam is the set of questions. Here, the <code class="docutils literal notranslate"><span class="pre">Question</span></code> will be modeled as an <code class="docutils literal notranslate"><span class="pre">Entity</span></code> class. These classes are characterised for being parts of the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> one, with the extra capability to be uniquely identified. To know more about the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> class, it’s recommended to read the [TODO: link to architecture].</p>
-<p>In this case, for shake or simplicity, the <code class="docutils literal notranslate"><span class="pre">Question</span></code> entity will only have two attributes: a <code class="docutils literal notranslate"><span class="pre">title</span></code>, which will contain the question to be answered, and a set of <code class="docutils literal notranslate"><span class="pre">choices</span></code> to be picked. But initially, <code class="docutils literal notranslate"><span class="pre">choices</span></code> will be ignored:</p>
+<p>One of the most important parts of an exam is the set of questions. Here, the <code class="docutils literal notranslate"><span class="pre">Question</span></code> will be modeled as an <code class="docutils literal notranslate"><span class="pre">Entity</span></code> descendant. The <em>Entity</em> classes are characterised for being parts of the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> one, with the extra capability to be uniquely identified based on an internal identifier. To know more about the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> class, it’s recommended to read the [TODO: link to architecture].</p>
+<p>In this case, for sake or simplicity, the <code class="docutils literal notranslate"><span class="pre">Question</span></code> entity will only have two attributes: a <code class="docutils literal notranslate"><span class="pre">title</span></code>, which will contain the question to be answered, and a set of <code class="docutils literal notranslate"><span class="pre">answers</span></code> to be picked. But initially, <code class="docutils literal notranslate"><span class="pre">answers</span></code> will be ignored:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Entity</span><span class="p">,</span>
-    <span class="n">ValueObjectSet</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">Question</span><span class="p">(</span><span class="n">Entity</span><span class="p">):</span>
     <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="c1"># choices: ...</span>
+    <span class="c1"># answers: ...</span>
 </pre></div>
 </div>
 <p>After being defined the <code class="docutils literal notranslate"><span class="pre">Question</span></code> entity, the next step is to integrate it into the <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate. In this case, it’s needed to have a special feature, which is multiplicity.</p>
@@ -500,23 +500,67 @@ The reason why it exists is because <em>Aggregate References</em> should be stor
 </pre></div>
 </div>
 </div>
-<div class="section" id="defining-the-choice-value-object">
-<h2>Defining the <code class="docutils literal notranslate"><span class="pre">Choice</span></code> value object…<a class="headerlink" href="#defining-the-choice-value-object" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<div class="section" id="defining-the-answer-value-object">
+<h2>Defining the <code class="docutils literal notranslate"><span class="pre">Answer</span></code> value object…<a class="headerlink" href="#defining-the-answer-value-object" title="Permalink to this headline">¶</a></h2>
+<p>The last part before the <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate is ready is to define the available answers for the questions. In this case, the <code class="docutils literal notranslate"><span class="pre">Answer</span></code> class will be defined as a <code class="docutils literal notranslate"><span class="pre">ValueObject</span></code> descendant. <em>Value Object</em> classes are characterised by both qualities: They are immutable and the way to identify them is through their field values. To know more about this concept it’s recommended to read the [TODO: link to architecture].</p>
+<p>In this case, the <code class="docutils literal notranslate"><span class="pre">Answer</span></code> class will be composed of two simple attributes, the <code class="docutils literal notranslate"><span class="pre">text</span></code> containing the answer itself and a <code class="docutils literal notranslate"><span class="pre">correct</span></code> boolean flag. This strategy will allow to extend the implementation to multiple-answer questions without so much effort.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ValueObject</span><span class="p">,</span>
 <span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">Choice</span><span class="p">(</span><span class="n">ValueObject</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Answer</span><span class="p">(</span><span class="n">ValueObject</span><span class="p">):</span>
     <span class="n">text</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">correct</span><span class="p">:</span> <span class="nb">bool</span>
+</pre></div>
+</div>
+<p>Similarly to the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> case, to store a collection of <code class="docutils literal notranslate"><span class="pre">Value</span> <span class="pre">Object</span></code> instances, it’s possible to use the <code class="docutils literal notranslate"><span class="pre">list</span></code>, but the best choice for most cases is the <code class="docutils literal notranslate"><span class="pre">ValueObjectSet</span></code> class, that also heirs from the <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableSet">collections.abc.MutableSet</a> base class. The main difference between <code class="docutils literal notranslate"><span class="pre">ValueObjectSet</span></code> and <code class="docutils literal notranslate"><span class="pre">EntitySet</span></code> is that in this case the hashing is performed from the field values of each <code class="docutils literal notranslate"><span class="pre">ValueObject</span></code> instance, instead of simply using the <code class="docutils literal notranslate"><span class="pre">Entity</span></code>‘s unique identifier for obvious reasons.</p>
+<p>Then, if the <code class="docutils literal notranslate"><span class="pre">ValueObjectSet</span></code> is chosen as the collection of answers, the <code class="docutils literal notranslate"><span class="pre">Question</span></code> class will turns on:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Entity</span><span class="p">,</span>
+    <span class="n">ValueObjectSet</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Question</span><span class="p">(</span><span class="n">Entity</span><span class="p">):</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">answers</span><span class="p">:</span> <span class="n">ValueObject</span><span class="p">[</span><span class="n">Answer</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Now, the way to create <code class="docutils literal notranslate"><span class="pre">Answer</span></code> instances is as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">question_identifier</span><span class="p">:</span> <span class="n">UUID</span> <span class="o">=</span> <span class="o">...</span>
+<span class="n">question</span> <span class="o">=</span> <span class="n">exam</span><span class="o">.</span><span class="n">questions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">question_identifier</span><span class="p">)</span>
+
+<span class="n">question</span><span class="o">.</span><span class="n">answers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Answer</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+<span class="n">question</span><span class="o">.</span><span class="n">answers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Answer</span><span class="p">(</span><span class="s2">&quot;5&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+
+<span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>One important thing to not in this case is how <code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> works in cases like this one. Here, a <code class="docutils literal notranslate"><span class="pre">ValueObjectSet</span></code> (with incremental capabilities) is used inside <code class="docutils literal notranslate"><span class="pre">Entity</span></code> instances stored inside an <code class="docutils literal notranslate"><span class="pre">EntitySet</span></code>, that is one of the fields of the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> class. So, this is a special case because the incremental capabilities only work at first field level respect to the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code>.</p>
+<p>In this case, the generated <code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> will be like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AggregateDiff</span><span class="p">(</span>
+    <span class="n">action</span><span class="o">=</span><span class="n">Action</span><span class="o">.</span><span class="n">UPDATE</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;src.aggregates.Exam&quot;</span><span class="p">,</span>
+    <span class="n">uuid</span><span class="o">=...</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">created_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated datetime</span>
+    <span class="n">fields_diff</span><span class="o">=</span><span class="n">FieldDiffContainer</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">IncrementalFieldDiff</span><span class="p">(</span>
+                <span class="s2">&quot;questions&quot;</span><span class="p">,</span>
+                <span class="n">Question</span><span class="p">,</span>
+                <span class="n">Question</span><span class="p">(</span><span class="s2">&quot;What is 1 + 1?&quot;</span><span class="p">,</span> <span class="n">ValueObjectSet</span><span class="p">([</span><span class="n">Answer</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="n">Answer</span><span class="p">(</span><span class="s2">&quot;5&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)])),</span>
+                <span class="n">Action</span><span class="o">.</span><span class="n">UPDATE</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>After being described step by step the main functionalities of the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> class, and also the commonly used classes that relate with, here is a full snapshot of the resulting <code class="docutils literal notranslate"><span class="pre">src/aggregates.py</span></code> file:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/aggregates.py&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
@@ -555,10 +599,10 @@ The reason why it exists is because <em>Aggregate References</em> should be stor
 
 <span class="k">class</span> <span class="nc">Question</span><span class="p">(</span><span class="n">Entity</span><span class="p">):</span>
     <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">choices</span><span class="p">:</span> <span class="n">ValueObjectSet</span><span class="p">[</span><span class="n">Choice</span><span class="p">]</span>
+    <span class="n">answers</span><span class="p">:</span> <span class="n">ValueObjectSet</span><span class="p">[</span><span class="n">Answer</span><span class="p">]</span>
 
 
-<span class="k">class</span> <span class="nc">Choice</span><span class="p">(</span><span class="n">ValueObject</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Answer</span><span class="p">(</span><span class="n">ValueObject</span><span class="p">):</span>
     <span class="n">text</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">correct</span><span class="p">:</span> <span class="nb">bool</span>
 </pre></div>
