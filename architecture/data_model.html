@@ -106,7 +106,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#aggregate">Aggregate</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#aggregateref">AggregateRef</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#modelref">ModelRef</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#migrations">Migrations</a></li>
 </ul>
 </li>
 </ul>
@@ -231,8 +230,7 @@ new address is actually being created. Thus, <code class="docutils literal notra
 </div>
 <div class="section" id="aggregate">
 <h2>Aggregate<a class="headerlink" href="#aggregate" title="Permalink to this headline">¶</a></h2>
-<p>An Aggregate is a composition of entities that work together in order to reach a complex goal. One of the main
-objectives of such constructions is to encapsulate business complexity behind an <code class="docutils literal notranslate"><span class="pre">aggregate</span></code> root, which is an <code class="docutils literal notranslate"><span class="pre">entity</span></code>
+<p>An Aggregate is a composition of entities that work together in order to reach a complex goal. One of the main objectives of suchc onstructions is to encapsulate business complexity behind an <code class="docutils literal notranslate"><span class="pre">aggregate</span></code> root, which is an <code class="docutils literal notranslate"><span class="pre">entity</span></code>
 taking that role. Thus, no message will be sent to each particular entity within the <code class="docutils literal notranslate"><span class="pre">aggregate</span></code>, but rather the
 aggregate root will handle and route each request.</p>
 <p>Because of this reason, there is a one to one correspondence among and <code class="docutils literal notranslate"><span class="pre">aggregate</span></code> and a microservice. This means a
@@ -248,15 +246,27 @@ components.</p>
 <h3>AggregateRef<a class="headerlink" href="#aggregateref" title="Permalink to this headline">¶</a></h3>
 <p>No software system consists just of one microservice. Microservices always come in groups and collaborate to provide the
 expected behaviour. For that reason, <code class="docutils literal notranslate"><span class="pre">Minos</span></code> provides an <code class="docutils literal notranslate"><span class="pre">AggregateRef</span></code> concept, which defines the dependencies that a
-microservice has with other microservices.</p>
+microservice has with others of its ecosystem.</p>
+<p>Mainly, defining an <code class="docutils literal notranslate"><span class="pre">AggregateRef</span></code> serves as a mean to compact dependencies’ data within the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> itself. Thus</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Ticket</span><span class="p">(</span><span class="n">AggregateRef</span><span class="p">):</span>
+    <span class="n">total_price</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">entries</span><span class="p">:</span> <span class="n">EntitySet</span><span class="p">[</span><span class="n">TicketEntry</span><span class="p">]</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="modelref">
 <h3>ModelRef<a class="headerlink" href="#modelref" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">ModelRef</span></code> connects an <code class="docutils literal notranslate"><span class="pre">AggregateRef</span></code> to the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> root. When a microservice subscribes to the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code>, the <code class="docutils literal notranslate"><span class="pre">ModelRef</span></code> is responsible for bringing back the content of the <code class="docutils literal notranslate"><span class="pre">AggregateRef</span></code>, put everything together and publish it. Thus, the event does not publish just an UUID but an object with the structure of the <code class="docutils literal notranslate"><span class="pre">AggregateRef</span></code>.</p>
+<p>For example, let’s consider the following <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> structure:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Order</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
+    <span class="n">ticket</span><span class="p">:</span> <span class="n">ModelRef</span><span class="p">[</span><span class="n">Ticket</span><span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">Ticket</span><span class="p">(</span><span class="n">AggregateRef</span><span class="p">):</span>
+    <span class="n">total_price</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">entries</span><span class="p">:</span> <span class="n">EntitySet</span><span class="p">[</span><span class="n">TicketEntry</span><span class="p">]</span>
+</pre></div>
 </div>
-<div class="section" id="migrations">
-<h3>Migrations<a class="headerlink" href="#migrations" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
+<p>If a service is subscribed to the <code class="docutils literal notranslate"><span class="pre">OrderCreated</span></code> event, it will receive the Ticket with its total_price` and entries instead of just the UUID associated to that Ticket.</p>
 </div>
 </div>
 </div>
