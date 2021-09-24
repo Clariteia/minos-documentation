@@ -267,8 +267,10 @@
     <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">created_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated aggregate datetime</span>
     <span class="n">fields_diff</span><span class="o">=</span><span class="n">FieldDiffContainer</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Mid-term&quot;</span><span class="p">,</span>
-        <span class="n">duration</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">[</span>
+            <span class="n">FieldDiff</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Mid-term&quot;</span><span class="p">),</span>
+            <span class="n">FieldDiff</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="p">]</span>
     <span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
@@ -300,7 +302,9 @@
     <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">created_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated datetime</span>
     <span class="n">fields_diff</span><span class="o">=</span><span class="n">FieldDiffContainer</span><span class="p">(</span>
-        <span class="n">duration</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">),</span>
+        <span class="p">[</span>
+            <span class="n">FieldDiff</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">)),</span>
+        <span class="p">]</span>
     <span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
@@ -415,7 +419,8 @@
 </div>
 <div class="section" id="defining-the-subject-reference">
 <h2>Defining the <code class="docutils literal notranslate"><span class="pre">Subject</span></code> reference…<a class="headerlink" href="#defining-the-subject-reference" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>After being described the basics about aggregates and how to perform operations with them, the next natural step to be able to create complex data models is to learn how to create relations with another aggregates. One important thing to notice here is that whereas multiple <em>Aggregate</em> classes can coexist within the same microservice, the recommended strategy is to keep only one <em>Aggregate</em> per microservice. Then, assuming that it’s needed to create a relation from one to another, <code class="docutils literal notranslate"><span class="pre">minos</span></code> provides the concept of <em>Aggregate References</em>, which allow to define the schema of the external <em>Aggregate</em>, so that the business logic within that microservice will be able to support on its fields.</p>
+<p>For example, if it’s needed to relate the <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate with a supposed <code class="docutils literal notranslate"><span class="pre">Subject</span></code> aggregate defined on another microservice then using the <code class="docutils literal notranslate"><span class="pre">AggregateRef</span></code> will be the solution. One of the reasons why we need to have a reference with <code class="docutils literal notranslate"><span class="pre">Subject</span></code> could be to use the <code class="docutils literal notranslate"><span class="pre">title</span></code> field for some kind of query defined in the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> (which is described on <a class="reference internal" href="query.html"><span class="doc">Exposing Information: Query Service</span></a>).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AggregateRef</span><span class="p">,</span>
 <span class="p">)</span>
@@ -425,10 +430,29 @@
     <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
 </pre></div>
 </div>
+<p>After being defined the <code class="docutils literal notranslate"><span class="pre">AggregateRef</span></code>, the next step is to create the relation with the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> one. The way to do that is using the <code class="docutils literal notranslate"><span class="pre">ModelRef</span></code> type hint.
+The reason why it exists is because <em>Aggregate References</em> should be stored as references on the database, but in some cases, it’s needed to be resolved to use some of their fields.  The <code class="docutils literal notranslate"><span class="pre">ModelRef</span></code> is mostly defined as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ModelRef</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">UUID</span><span class="p">]</span> <span class="c1"># in which T is an AggregateRef type</span>
+</pre></div>
+</div>
+<p>Then, the <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate turns into:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ModelRef</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Exam</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">duration</span><span class="p">:</span> <span class="n">timedelta</span>
+    <span class="n">subject</span><span class="p">:</span> <span class="n">ModelRef</span><span class="p">[</span><span class="n">Subject</span><span class="p">]</span>
+    <span class="c1"># questions: ...</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="defining-the-question-entity">
 <h2>Defining the <code class="docutils literal notranslate"><span class="pre">Question</span></code> entity…<a class="headerlink" href="#defining-the-question-entity" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>One of the most important parts of an exam is the set of questions. Here, the <code class="docutils literal notranslate"><span class="pre">Question</span></code> will be modeled as an <code class="docutils literal notranslate"><span class="pre">Entity</span></code> class. These classes are characterised for being parts of the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> one, with the extra capability to be uniquely identified. To know more about the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> class, it’s recommended to read the [TODO: link to architecture].</p>
+<p>In this case, for shake or simplicity, the <code class="docutils literal notranslate"><span class="pre">Question</span></code> entity will only have two attributes: a <code class="docutils literal notranslate"><span class="pre">title</span></code>, which will contain the question to be answered, and a set of <code class="docutils literal notranslate"><span class="pre">choices</span></code> to be picked. But initially, <code class="docutils literal notranslate"><span class="pre">choices</span></code> will be ignored:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Entity</span><span class="p">,</span>
     <span class="n">ValueObjectSet</span><span class="p">,</span>
@@ -437,6 +461,42 @@
 <span class="k">class</span> <span class="nc">Question</span><span class="p">(</span><span class="n">Entity</span><span class="p">):</span>
     <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
     <span class="c1"># choices: ...</span>
+</pre></div>
+</div>
+<p>After being defined the <code class="docutils literal notranslate"><span class="pre">Question</span></code> entity, the next step is to integrate it into the <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate. In this case, it’s needed to have a special feature, which is multiplicity.</p>
+<p>A possible solution could be to use a <code class="docutils literal notranslate"><span class="pre">list</span></code> or something similar so that <code class="docutils literal notranslate"><span class="pre">questions:</span> <span class="pre">list[Question]</span></code> resolves the problem, but this approach has a caveat, that is the event publication. Using the <code class="docutils literal notranslate"><span class="pre">list</span></code> class, the <code class="docutils literal notranslate"><span class="pre">questions</span></code> field is treated as a standard field and the generated events will publish the full list of questions also when only one of them has a small change. In some cases this could be the needed behaviour, but another one can be used.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">EntitySet</span></code> class is the best way to store <em>Entities</em> in most cases, as it provides <em>incremental storing capabilities</em> that provides a big speedup when a big amount of them is stored. In terms of usage, the <code class="docutils literal notranslate"><span class="pre">EntitySet</span></code> inherits from the <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableSet">collections.abc.MutableSet</a> base class, so it can be used as a standard Python’s <code class="docutils literal notranslate"><span class="pre">set</span></code>, so that includes the common <code class="docutils literal notranslate"><span class="pre">add</span></code>, <code class="docutils literal notranslate"><span class="pre">remove</span></code>, <code class="docutils literal notranslate"><span class="pre">__contains__</span></code>, etc. methods, but are specially adapted for <code class="docutils literal notranslate"><span class="pre">Entity</span></code> instances.</p>
+<p>In any case, the real advantage to use the <code class="docutils literal notranslate"><span class="pre">EntitySet</span></code> are the <em>incremental storing capabilities</em>, that is, instead of storing the full entity set after each <code class="docutils literal notranslate"><span class="pre">Aggregate.update</span></code> call, only the creations, updates or deletions are stored (and also published over the event system).</p>
+<p>For example, if the <code class="docutils literal notranslate"><span class="pre">EntitySet</span></code> is chosen for the <code class="docutils literal notranslate"><span class="pre">questions</span></code> field, the <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate turns into:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EntitySet</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Exam</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">duration</span><span class="p">:</span> <span class="n">timedelta</span>
+    <span class="n">subject</span><span class="p">:</span> <span class="n">ModelRef</span><span class="p">[</span><span class="n">Subject</span><span class="p">]</span>
+    <span class="n">questions</span><span class="p">:</span> <span class="n">EntitySet</span><span class="p">[</span><span class="n">Question</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Inserting a <code class="docutils literal notranslate"><span class="pre">Question</span></code>, is as simple as inserting it into any <code class="docutils literal notranslate"><span class="pre">set</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">exam</span><span class="o">.</span><span class="n">questions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Question</span><span class="p">(</span><span class="s2">&quot;What is 1 + 1?&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The generated event when <code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">exam.save()</span></code> is called in this case is similar to:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AggregateDiff</span><span class="p">(</span>
+    <span class="n">action</span><span class="o">=</span><span class="n">Action</span><span class="o">.</span><span class="n">UPDATE</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;src.aggregates.Exam&quot;</span><span class="p">,</span>
+    <span class="n">uuid</span><span class="o">=...</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">created_at</span><span class="o">=...</span><span class="p">,</span> <span class="c1"># generated datetime</span>
+    <span class="n">fields_diff</span><span class="o">=</span><span class="n">FieldDiffContainer</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">IncrementalFieldDiff</span><span class="p">(</span><span class="s2">&quot;questions&quot;</span><span class="p">,</span> <span class="n">Question</span><span class="p">,</span> <span class="n">Question</span><span class="p">(</span><span class="s2">&quot;What is 1 + 1?&quot;</span><span class="p">),</span> <span class="n">Action</span><span class="o">.</span><span class="n">CREATE</span><span class="p">),</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
