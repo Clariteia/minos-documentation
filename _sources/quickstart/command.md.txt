@@ -256,7 +256,7 @@ class ExamCommandService(CommandService):
     async def create_exam(self, request: Request) -> Response:
         content = await request.content()
 
-        exam = await Exam.create(content["subject"], content["title"], EntitySet())
+        exam = await Exam.create(content["name"], content["duration"], content["subject"], EntitySet())
 
         return Response(exam.uuid)
 
@@ -266,7 +266,7 @@ class ExamCommandService(CommandService):
         content = await request.content()
         
         exam = await Exam.get(content["exam"])
-        answers = ValueObjectSet([Answer(raw["title"], raw["correct"]) for raw in content["answer"]])
+        answers = ValueObjectSet([Answer(raw["text"], raw["correct"]) for raw in content["answer"]])
         question = Question(content["title"], answers)
         exam.questions.add(question)
         await exam.save()
