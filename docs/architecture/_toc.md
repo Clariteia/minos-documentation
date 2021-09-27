@@ -10,3 +10,4 @@
    rest_handler
    saga
    decorators
+   transactionality
