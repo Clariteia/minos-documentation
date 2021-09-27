@@ -33,8 +33,6 @@ broker:
     retry: 2
 commands:
   service: src.commands.ExamCommandService
-queries:
-  service: src.queries.ExamQueryService
 ...
 ```
 
