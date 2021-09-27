@@ -55,7 +55,7 @@ consumption of each microservice).
 
 Before the message is finally published in Kafka, it goes through a series of operations involving the following actors,
 which are necessary to know before going deeper into the flow:
-+ **Broker**: In charge of storing the received message in the database and launching a 
++ [Broker](./transactionality.html#broker): In charge of storing the received message in the database and launching a 
   [NOTIFY](https://www.postgresql.org/docs/9.1/sql-notify.html).
 + **Database**: It is the database where the message is stored to preserve transactionality and to be tolerant to system 
   failures.
@@ -86,29 +86,10 @@ Now that we know the components involved, let's look at the complete flow:
    @enduml
 
 
-1. The `Broker` receive the message and add it to the database 
-   
-   The received message is stored in the `PostgreSQL` database of the corresponding microservice.
-   The table where the message is stored has the following structure:
-   ```SQL
-   CREATE TABLE IF NOT EXISTS producer_queue (
-   id BIGSERIAL NOT NULL PRIMARY KEY,
-   topic VARCHAR(255) NOT NULL,
-   data BYTEA NOT NULL,
-   action VARCHAR(255) NOT NULL,
-   retry INTEGER NOT NULL DEFAULT 0,
-   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())
-   ```
+1. The [Broker](./transactionality.html#broker) receive the message and add it to the database. Then trigger notify action to the database.
 
-2. The `Broker` trigger notify action to the database
    
-   The Broker triggers a notification to let the Producer know that new messages are available.
-   ```SQL
-   NOTIFY producer_queue
-   ```
-   
-3. The `Producer` listens to new messages
+2. The `Producer` listens to new messages
    
    The Producer is actively listening for new messages using the following SQL:
 
@@ -116,11 +97,11 @@ Now that we know the components involved, let's look at the complete flow:
    LISTEN producer_queue
    ```
    
-4. The `Producer` is notified of new messages
+3. The `Producer` is notified of new messages
 
    The producer reads from the database table (mentioned in step 1) obtaining the new messages.
 
-5. The `Producer` publishes the messages in `Kafka`
+4. The `Producer` publishes the messages in `Kafka`
 
    The message have several **attempts** to be stored in the database (parameterizable). As an example, we set the
    number of retries to 3, if on the third attempt the message is not published to the Kafka, it is marked to not be
@@ -142,7 +123,7 @@ Now that we know the components involved, let's look at the complete flow:
       @enduml
 
 
-6. If the message has been published, it is deleted
+5. If the message has been published, it is deleted
 
    The `producer` takes care of deleting the message from the local database once it has been successfully published in
    Kafka.
@@ -156,7 +137,7 @@ The components that must be known beforehand are:
 + Consumer: It is in charge of obtaining the message from Kafka and storing it in the database.
 + Database: It is the database where the message is stored to preserve transactionality and to be tolerant to system 
   failures.
-+ Handler: It is responsible of triggering the final action (calling the function that is subscribed to the message 
++ [Handler](./transactionality.html#handler): It is responsible of triggering the final action (calling the function that is subscribed to the message 
   for example).
 
 Now that we know the components involved, let's look at the complete flow:
@@ -206,24 +187,12 @@ Now that we know the components involved, let's look at the complete flow:
    NOTIFY consumer_queue
    ```
    
-3. The `Handler` listens to new messages
-   
-   The `Handler` is actively listening for new messages using the following SQL:
-
-   ```SQL
-   LISTEN consumer_queue
-   ```
-
-4. The `Handler` is notified of new messages
-
+3. The [Handler](./transactionality.html#handler) listens to new messages and reads from the database table 
+   (mentioned in step 1) obtaining the new messages.
    The `Handler` reads from the database table (mentioned in step 1) obtaining the new messages.
-
-
-5. Final action is triggered
-
-   The message have several **attempts** to be consumed in the database (parameterizable). As an example, we set the
-   number of retries to 3, if on the third attempt the message is not triggered to action correctly, it is marked to not be
-   processed any more times.
+   
+   Final action is triggered and the message have several **attempts** to be consumed in the database (parameterizable).
+   If it exhausts the attempts, it is flagged in the database for no further processing.
    
    .. uml::
       :align: center
@@ -249,9 +218,7 @@ Now that we know the components involved, let's look at the complete flow:
       Handler -> DB_B: Message marked for no further processing
       @enduml
 
-6. If the message has been published, it is deleted
-
-   The `Handler` takes care of deleting the message from the local database once it has been successfully consumed.
+   Finally, If the message has been published, it is deleted
 
 
 ## Event
