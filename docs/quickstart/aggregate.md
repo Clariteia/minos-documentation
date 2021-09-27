@@ -30,7 +30,6 @@ class Exam(Aggregate):
     # subject: ...
     # questions: ...
 ```
-**Important**: The `timedelta` support is being on development stage (https://github.com/Clariteia/minos_microservice_common/issues/312). It's recommended to use the `int` type until the development is completed.
 
 Then, an exam instance could be created as follows:
 ```python
