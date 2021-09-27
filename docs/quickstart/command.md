@@ -109,11 +109,62 @@ class ExamCommandService(CommandService):
 
 ## Adding `Exam` questions!
 
-TODO
+```python
+from minos.common import (
+    EntitySet,
+)
+from minos.networks import (
+    enroute,
+    Response,
+    Request,
+)
+from .aggregates import (
+    Exam,
+)
+
+
+class ExamCommandService(CommandService):
+    ...
+
+    @enroute.rest.command("/exams/{uuid}/questions", "POST")
+    @enroute.broker.command("AddExamQuestion")
+    async def add_question(self, request: Request) -> Response:
+        ...
+
+```
+
 
 ## Deleting `Exam`...
 
-TODO
+```python
+from minos.common import (
+    MinosSnapshotAggregateNotFoundException,
+    MinosSnapshotDeletedAggregateException,
+)
+from minos.networks import (
+    ResponseException,
+)
+
+
+class ExamCommandService(CommandService):
+    ...
+
+    @enroute.rest.command("/exams/{uuid}", "DELETE")
+    @enroute.broker.command("DeleteExam")
+    async def delete_exam(self, request: Request) -> None:
+        content = await request.content()
+        uuid = content["uuid"]
+            
+        try:
+            exam = await Exam.get(uuid)
+        except MinosSnapshotAggregateNotFoundException:
+            raise ResponseException(f"The exam does not exists: {uuid}")
+        except MinosSnapshotDeletedAggregateException:
+            raise ResponseException(f"The exam is already deleted: {uuid}")
+
+        await exam.delete()
+```
+
 
 ## Why not to implement `get` commands?
 
@@ -126,6 +177,8 @@ TODO
 
 from minos.common import (
     EntitySet,
+    MinosSnapshotAggregateNotFoundException,
+    MinosSnapshotDeletedAggregateException,
 )
 from minos.cqrs import (
     CommandService,
@@ -133,6 +186,7 @@ from minos.cqrs import (
 from minos.networks import (
     Request,
     Response,
+    ResponseException,
     enroute,
 )
 
@@ -151,4 +205,24 @@ class ExamCommandService(CommandService):
         exam = await Exam.create(content["subject"], content["title"], EntitySet())
 
         return Response(exam.uuid)
+
+    @enroute.rest.command("/exams/{uuid}/questions", "POST")
+    @enroute.broker.command("AddExamQuestion")
+    async def add_question(self, request: Request) -> Response:
+        ...
+    
+    @enroute.rest.command("/exams", "DELETE")
+    @enroute.broker.command("DeleteExam")
+    async def delete_exam(self, request: Request) -> None:
+        content = await request.content()
+        uuid = content["uuid"]
+            
+        try:
+            exam = await Exam.get(uuid)
+        except MinosSnapshotAggregateNotFoundException:
+            raise ResponseException(f"The exam does not exists: {uuid}")
+        except MinosSnapshotDeletedAggregateException:
+            raise ResponseException(f"The exam is already deleted: {uuid}")
+
+        await exam.delete()
 ```
