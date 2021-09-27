@@ -80,6 +80,8 @@ The `minos.networks.Request` and `minos.networks.Response` are the classes with 
 
 ## Exposing `Exam` creation...
 
+TODO
+
 ```python
 from minos.common import (
     EntitySet,
@@ -107,7 +109,11 @@ class ExamCommandService(CommandService):
 
 ```
 
+TODO
+
 ## Adding `Exam` questions!
+
+TODO
 
 ```python
 from minos.common import (
@@ -133,8 +139,11 @@ class ExamCommandService(CommandService):
 
 ```
 
+TODO
 
 ## Deleting `Exam`...
+
+TODO
 
 ```python
 from minos.common import (
@@ -165,12 +174,15 @@ class ExamCommandService(CommandService):
         await exam.delete()
 ```
 
+TODO
 
 ## Why not to implement `get` commands?
 
 TODO
 
 ## Summary
+
+TODO
 
 ```python
 """src/commands.py"""
