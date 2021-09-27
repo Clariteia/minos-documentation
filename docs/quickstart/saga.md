@@ -1,5 +1,9 @@
 # Building Interactions: Sagas
 
+In a microservices architecture, it is necessary to interact with other services, in this case using SAGAs.
+
+In this section we will define a fictitious microservice `Attempt` and how to compose and call a SAGA.
+
 ## Introduction
 Currently we have the Exam microservice with the following Aggregates structure:
 
