@@ -463,7 +463,7 @@ AggregateDiff(
 
 ## Summary
 
-After being described step by step the main functionalities of the `Aggregate` class, and also the commonly used classes that relate with, here is a full snapshot of the resulting `src/aggregates.py` file:
+After being described step by step the main features of the `Aggregate` class, and also the commonly used classes that relate with, here is a full snapshot of the resulting `src/aggregates.py` file:
 
 ```python
 """src/aggregates.py"""

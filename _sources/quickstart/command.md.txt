@@ -212,13 +212,15 @@ class ExamCommandService(CommandService):
 
 One of the main advantages of an event based implementation is that it's very easy to understand and implement. Also, it keeps the dependencies on the right direction and improves isolation of each component in the system. [TODO: Tell the saga based alternative.]  
 
-## Why not to implement `get` commands?
+## Why not to implement `get` operations as commands?
 
-TODO
+The queries (or get operations) are a special kind of operations characterised by the absence of side effects. As the `minos` framework follow the [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern, it is highly recommended not to implement `get` operations to be resolved by the `CommandService` because its responsibility must be to define operations that change the internal `Aggregate` instances in some sense. 
+
+By cons, the `QueryService` must not use the `Aggregate` class directly, so it cannot change its state, but it's able to know that state through the domain events given as `AggregateDiff` instances. In this way, the `QueryService` is able to have a custom internal representation of the `Aggregate` oriented to the queries that it implements, being easier to have big performance advantages. A more detailed explanation can be seen in :doc:`/quickstart/query`.
 
 ## Summary
 
-TODO
+After being described step by step the main features of the `minos.cqrs.CommandService` class and related classes like `minos.networks.Request`, `minos.networks.Response` and `minos.networks.enroute`, here is a full snapshot of the resulting `src/commands.py` file:
 
 ```python
 """src/commands.py"""
