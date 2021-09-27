@@ -100,6 +100,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#exposing-exam-creation">Exposing <code class="docutils literal notranslate"><span class="pre">Exam</span></code> creation…</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#adding-exam-questions">Adding <code class="docutils literal notranslate"><span class="pre">Exam</span></code> questions!</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#deleting-exam">Deleting <code class="docutils literal notranslate"><span class="pre">Exam</span></code>…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deleting-exam-by-events">Deleting <code class="docutils literal notranslate"><span class="pre">Exam</span></code> by events…</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#why-not-to-implement-get-commands">Why not to implement <code class="docutils literal notranslate"><span class="pre">get</span></code> commands?</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
@@ -223,7 +224,7 @@
 
 
 <span class="k">class</span> <span class="nc">ExamCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
-    <span class="k">pass</span>
+    <span class="o">...</span>
 </pre></div>
 </div>
 <p>The most important part here is the <code class="docutils literal notranslate"><span class="pre">minos.cqrs.CommandService</span></code> import. In <code class="docutils literal notranslate"><span class="pre">minos</span></code>, the <code class="docutils literal notranslate"><span class="pre">cqrs</span></code> module is the one who implements the abstract service classes, both for commands and for queries.</p>
@@ -250,10 +251,11 @@
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">minos.networks.Request</span></code> and <code class="docutils literal notranslate"><span class="pre">minos.networks.Response</span></code> are the classes with the responsibility to provide access to the received request itself and to build the given response. The main advantage of these two classes are that they are able to fully isolate the surrounding network interface that received the request, so that the code keeps much more simple. One thing to notice is that the endpoint does not need to necessarily return any value because there are some cases in which has no sense from the business logic perspective. Also, it’s important to notice that the <code class="docutils literal notranslate"><span class="pre">minos.networks.ResponseException</span></code> provides a way to notify that there was some kind of situation that does not allow resolve the request successfully.</p>
+<p>Now that the basic concepts to expose operations that can be used both by another microservices and also by external clients, the next step is to include some examples that help in the process to understand it better.</p>
 </div>
 <div class="section" id="exposing-exam-creation">
 <h2>Exposing <code class="docutils literal notranslate"><span class="pre">Exam</span></code> creation…<a class="headerlink" href="#exposing-exam-creation" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>A common operation on a microservice is the creation of <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> instances. Here is an example of <code class="docutils literal notranslate"><span class="pre">Exam</span></code>‘s creation, defined on the <code class="docutils literal notranslate"><span class="pre">ExamCommandService</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">EntitySet</span><span class="p">,</span>
 <span class="p">)</span>
@@ -279,11 +281,11 @@
         <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">exam</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>TODO</p>
+<p>In this case, the command is exposed both over the <em>REST</em> and <em>Broker</em> interfaces. The way to extract the information from a <code class="docutils literal notranslate"><span class="pre">Request</span></code> instance is through its <code class="docutils literal notranslate"><span class="pre">content()</span></code> method, that in this case is assumed to be a <code class="docutils literal notranslate"><span class="pre">dict</span></code> instance containing the <code class="docutils literal notranslate"><span class="pre">subject</span></code> and <code class="docutils literal notranslate"><span class="pre">title</span></code> fields. The <code class="docutils literal notranslate"><span class="pre">return</span></code> value in this case is a <code class="docutils literal notranslate"><span class="pre">Response</span></code> instance, in which the content is composed of an <code class="docutils literal notranslate"><span class="pre">UUID</span></code> instance, but another composed options would have been possible. To know more about that, it’s recommended to visit [TODO: link to Request/Response architecture section].</p>
 </div>
 <div class="section" id="adding-exam-questions">
 <h2>Adding <code class="docutils literal notranslate"><span class="pre">Exam</span></code> questions!<a class="headerlink" href="#adding-exam-questions" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>Similarly to <code class="docutils literal notranslate"><span class="pre">Exam</span></code>‘s creation, another possible command could be the question adding:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ValueObjectSet</span><span class="p">,</span>
 <span class="p">)</span>
@@ -310,11 +312,11 @@
         <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">question</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>TODO</p>
+<p>As it can be seeing, the main structure of the handling method is really similar to the one for <code class="docutils literal notranslate"><span class="pre">Exam</span></code>‘s creation. An interesting difference here is that the generated <code class="docutils literal notranslate"><span class="pre">ExamUpdated</span></code> event will contain only the <code class="docutils literal notranslate"><span class="pre">Question</span></code> instance that is being created as it is stored inside an <code class="docutils literal notranslate"><span class="pre">EntitySet</span></code>. This is really important from the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> perspective, as it will be seeing in future guides.</p>
 </div>
 <div class="section" id="deleting-exam">
 <h2>Deleting <code class="docutils literal notranslate"><span class="pre">Exam</span></code>…<a class="headerlink" href="#deleting-exam" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p><code class="docutils literal notranslate"><span class="pre">Exam</span></code>‘s deletion could be another common use case on a <code class="docutils literal notranslate"><span class="pre">exam</span></code> microservice. It can be implemented with a handling method like:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">MinosSnapshotAggregateNotFoundException</span><span class="p">,</span>
     <span class="n">MinosSnapshotDeletedAggregateException</span><span class="p">,</span>
@@ -343,7 +345,35 @@
         <span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>TODO</p>
+<p>The interesting part of this handling method is that it does not return any <code class="docutils literal notranslate"><span class="pre">Response</span></code>, which is a valid implementation, but it raises a <code class="docutils literal notranslate"><span class="pre">ResponseException</span></code> to notify the caller about the reason why the deletion could not be performed.</p>
+</div>
+<div class="section" id="deleting-exam-by-events">
+<h2>Deleting <code class="docutils literal notranslate"><span class="pre">Exam</span></code> by events…<a class="headerlink" href="#deleting-exam-by-events" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">Exam</span></code> aggregate contains a <code class="docutils literal notranslate"><span class="pre">ModelRef</span></code> to an external <code class="docutils literal notranslate"><span class="pre">Subject</span></code> aggregate, that it’s assumed that is defined into another microservice. In classic monolithic systems that uses relational database schemas, a <code class="docutils literal notranslate"><span class="pre">ON</span> <span class="pre">DELETE</span></code> statement defines how instances with references will behave after a deletion of the referred instance. As <code class="docutils literal notranslate"><span class="pre">minos</span></code> follows the event driven ideas, it’s also possible to perform operations after an event is published. So, a common use case of that could be to implement the <code class="docutils literal notranslate"><span class="pre">ON</span> <span class="pre">DELETE</span> <span class="pre">CASCADE</span></code> strategy between <code class="docutils literal notranslate"><span class="pre">Exam</span></code> and <code class="docutils literal notranslate"><span class="pre">Subject</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Condition</span><span class="p">,</span>
+    <span class="n">MinosSnapshotAggregateNotFoundException</span><span class="p">,</span>
+    <span class="n">MinosSnapshotDeletedAggregateException</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ResponseException</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ExamCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
+    <span class="o">...</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;SubjectDeleted&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">delete_exam_by_subject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+
+        <span class="n">exams</span> <span class="o">=</span> <span class="p">{</span><span class="n">exam</span> <span class="k">async</span> <span class="k">for</span> <span class="n">exam</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">Exam</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">Condition</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">,</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]))}</span>
+
+        <span class="k">for</span> <span class="n">exam</span> <span class="ow">in</span> <span class="n">exams</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>One of the main advantages of an event based implementation is that it’s very easy to understand and implement. Also, it keeps the dependencies on the right direction and improves isolation of each component in the system. [TODO: Tell the saga based alternative.]</p>
 </div>
 <div class="section" id="why-not-to-implement-get-commands">
 <h2>Why not to implement <code class="docutils literal notranslate"><span class="pre">get</span></code> commands?<a class="headerlink" href="#why-not-to-implement-get-commands" title="Permalink to this headline">¶</a></h2>
@@ -355,6 +385,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/commands.py&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Condition</span><span class="p">,</span>
     <span class="n">EntitySet</span><span class="p">,</span>
     <span class="n">ValueObjectSet</span><span class="p">,</span>
     <span class="n">MinosSnapshotAggregateNotFoundException</span><span class="p">,</span>
@@ -415,6 +446,15 @@
             <span class="k">raise</span> <span class="n">ResponseException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The exam is already deleted: </span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;SubjectDeleted&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">delete_exam_by_subject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+
+        <span class="n">exams</span> <span class="o">=</span> <span class="p">{</span><span class="n">exam</span> <span class="k">async</span> <span class="k">for</span> <span class="n">exam</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">Exam</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">Condition</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">,</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]))}</span>
+
+        <span class="k">for</span> <span class="n">exam</span> <span class="ow">in</span> <span class="n">exams</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
