@@ -160,6 +160,7 @@ service:
     saga_manager: minos.saga.SagaManager
     snapshot: minos.common.PostgreSqlSnapshot
     discovery: minos.networks.DiscoveryConnector
+    query_repository: src.queries.ExamQueryRepository
   services:
     - minos.networks.ConsumerService
     - minos.networks.CommandHandlerService
