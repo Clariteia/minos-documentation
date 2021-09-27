@@ -117,15 +117,11 @@ TODO
 
 ```python
 from minos.common import (
-    EntitySet,
-)
-from minos.networks import (
-    enroute,
-    Response,
-    Request,
+    ValueObjectSet,
 )
 from .aggregates import (
-    Exam,
+    Question,
+    Answer,
 )
 
 
@@ -135,7 +131,15 @@ class ExamCommandService(CommandService):
     @enroute.rest.command("/exams/{uuid}/questions", "POST")
     @enroute.broker.command("AddExamQuestion")
     async def add_question(self, request: Request) -> Response:
-        ...
+        content = await request.content()
+        
+        exam = await Exam.get(content["exam"])
+        answers = ValueObjectSet([Answer(raw["title"], raw["correct"]) for raw in content["answer"]])
+        question = Question(content["title"], answers)
+        exam.questions.add(question)
+        await exam.save()
+
+        return Response(question.uuid)
 
 ```
 
@@ -189,6 +193,7 @@ TODO
 
 from minos.common import (
     EntitySet,
+    ValueObjectSet,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
 )
@@ -202,8 +207,10 @@ from minos.networks import (
     enroute,
 )
 
-from ..aggregates import (
+from .aggregates import (
     Exam,
+    Question,
+    Answer,
 )
 
 
@@ -221,8 +228,16 @@ class ExamCommandService(CommandService):
     @enroute.rest.command("/exams/{uuid}/questions", "POST")
     @enroute.broker.command("AddExamQuestion")
     async def add_question(self, request: Request) -> Response:
-        ...
-    
+        content = await request.content()
+        
+        exam = await Exam.get(content["exam"])
+        answers = ValueObjectSet([Answer(raw["title"], raw["correct"]) for raw in content["answer"]])
+        question = Question(content["title"], answers)
+        exam.questions.add(question)
+        await exam.save()
+
+        return Response(question.uuid)
+
     @enroute.rest.command("/exams", "DELETE")
     @enroute.broker.command("DeleteExam")
     async def delete_exam(self, request: Request) -> None:
