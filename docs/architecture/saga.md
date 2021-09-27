@@ -18,7 +18,7 @@ Each local transaction updates the database and publishes a message or event to 
 the saga. If a local transaction fails because it violates a business rule then the saga executes a series of 
 compensating transactions that undo the changes that were made by the preceding local transactions.
 
-## Example
+
 In the following example we are going to see how the saga is for the case of adding a `Product` to the `Cart`, we want 
 this product to be reserved for us.
 
@@ -52,7 +52,7 @@ this product to be reserved for us.
 
 ## Definitions
 It is important to differentiate the components involved, which are broadly speaking:
-+ SAGA
++ `SAGA`
   
   It is the **definition of the different operations** involved in the transaction in an orderly and hierarchical manner.
   For example, to create an order we must reserve the products (microservice Product), generate the ticket or order 
@@ -60,7 +60,7 @@ It is important to differentiate the components involved, which are broadly spea
   executed in a set manner, i.e. first the product is reserved, then the ticket is generated and finally the payment 
   is created.
   
-+ SAGA Manager
++ `SAGA Manager`
   
    On the other hand, the saga manager is in charge of coordinating the execution of the SAGA's. 
 
@@ -78,6 +78,41 @@ It is important to differentiate the components involved, which are broadly spea
    "SAGA Manager" -> "SAGA C": Run SAGA C
    "SAGA Manager" --> : ...
    @enduml
+
+
+## How does it work?
+The communication between the microservices is done using `Command` and waiting for the corresponding `CommandReply`.
+
+`CommandBroker` is used to send the Command and ahere are 2 ways to receive the answer:
++ `CommandReplyHandler` if SAGA was paused on disk or
++ `DynamicHandler` if was paused on memmory.
+
+.. uml::
+  :align: center
+
+  @startuml
+  box "Microservice Order" #F3FFF6
+  participant "SAGA Manager"
+  participant "SAGA CreateOrder"
+  participant CommandBroker
+  participant CommandReplyHandler
+  participant DynamicHandler
+  end box
+  box "Microservice Product" #FFFFF3
+  participant "PurchaseProducts"
+  end box
+
+
+  autonumber
+  "SAGA Manager" -> "SAGA CreateOrder": Run
+  "SAGA CreateOrder" -> CommandBroker: Command
+  CommandBroker -> "PurchaseProducts": Send Command
+  CommandReplyHandler <-- "PurchaseProducts": Receive CommandReply (If SAGA paused on disk)
+  DynamicHandler <-- "PurchaseProducts": Receive CommandReply (If SAGA paused on memmory)
+  @enduml
+
+
+You can see more details about the exchange of messages in the [messaging](./messaging.html) section.
 
 ## SAGA structure
 
@@ -123,6 +158,9 @@ The step in turn contains the following operations:
   It is responsible for invoking a `Command` normally located in another microservice.
   
   The callback function is optional and is used to prepare data or information to be sent with the `Command`.
+  
+  In the following example you can see how to build the query where you would send `cart_uuid` together with the 
+  `CreateTicket` command.
 
   Example:
   ```python
@@ -136,8 +174,19 @@ The step in turn contains the following operations:
         Saga("CreateOrder")
         .step()
            .invoke_participant("CreateTicket", _create_ticket)
-           .on_reply("ticket", _process_ticket_entries)
-        .commit(_create_commit_callback)
+        .commit()
+    )
+    # The execution of the SAGA is omitted in this example ...
+  ```
+
+  Another simple example without passing data:
+  ```python
+  
+    CREATE_ORDER = (
+        Saga("CreateOrder")
+        .step()
+           .invoke_participant("CreateTicket")
+        .commit()
     )
     # The execution of the SAGA is omitted in this example ...
   ```
@@ -169,6 +218,8 @@ The step in turn contains the following operations:
    previous steps, if any, will be executed. 
   
    The callback function is optional and is used to prepare data or information to be sent with the `Command`.
+   
+   (If you need to send data you can construct the query in the same way as in the invoke_perticipant callback above.)
 
 .. uml::
   :align: center
@@ -192,12 +243,42 @@ The step in turn contains the following operations:
   "SAGA CreateOrder" <-- "PurchaseProducts": Compensation OK (Step 1)
   @enduml
 
+  
 
-### `commit()`
-TODO
+### `commit(Callback function[Optional])`
+The commit is primarily used to indicate the end of the SAGA definition and optionally to execute a callback function 
+once all the steps have been executed correctly.
++ The commit can be empty. What I would do is simply store the result.
+    ```python
+    def _get_payment(value: Aggregate) -> UUID:
+        return value.uuid
+    
+    CREATE_ORDER = (
+        Saga("CreateOrder")
+          .step()
+          .invoke_participant("CreatePayment", _payment)
+          .on_reply("payment", _get_payment)
+        .commit()
+    )
+    # The execution of the SAGA is omitted in this example ...
+    ```
 
-## SagaContext
-TODO
++ Or callback function can be called. It is normally used to perform operations with Aggregates. For example: 
+  Create the order, update it ...
+    ```python
+    def _commit(context: SagaContext) -> SagaContext:
+        # Some logic, normally Aggregate operations ...
+        return SagaContext(order=order)
+    
+    CREATE_ORDER = (
+        Saga("CreateOrder")
+          .step()
+          .invoke_participant("CreatePayment", _payment)
+          .on_reply("payment", _get_payment)
+        .commit(_commit)
+    )
+    # The execution of the SAGA is omitted in this example ...
+    ```
 
 ## SAGA Manager
 Saga manager is in charge of coordinating the execution of the saga or resuming the execution from disk or memory.
@@ -236,14 +317,15 @@ Saga manager accepts the following parameters:
 
 
 + `context` Optional
+  Normally when launching a SAGA, you need to pass some parameters to be able to work with them or once the SAGA is 
+  running to store the result of the step and this is where SagaContext is involved.
   
   Parameters that you want to send to SAGA in order to be able to operate with them. Example:
   ```python
   context=SagaContext(
-    cart_uuid=cart_uuid,
-    customer_uuid=customer_uuid,
-    payment_detail=payment_detail,
-    shipment_detail=shipment_detail,
+    customer=12345,
+    cart=83274892374,
+    ...
   ),
   ```
   Within the SAGA you can access them in the following way:
@@ -280,6 +362,65 @@ class OrderCommandService(CommandService):
     )
 ```
 
-## Query building
-TODO
+## Examples
+1. Get all users
+   
+   (please dont use similar in production, you know ;) )
+   
+   ```python
+   GET_USER = (
+    Saga()
+    .step()
+    .invoke_participant("GetUsers")
+    .commit()
+   )
+   ```
+   
+   We run SAGA with SagaManager as follows:
+   ```python
+   ...
+   saga = await self.saga_manager.run(GET_USER)
+   
+   # get results:
+   users = saga.context["users"])
+   ...
+   ```
+   
+   In invoke_participant SAGA will send the Command `GetUsers`. It will be received by the microservice that has that 
+   command defined. Logically it should be the **microservice User**.
+   
 
+2. Get specific user
+   
+   ```python
+   UserQuery = ModelType.build("UserQuery", {"user_id": int})
+   
+   def _user(context: SagaContext) -> Model:
+      user_id = context["user_id"]
+      return UserQuery(user_id)
+   
+   GET_USER = (
+    Saga()
+    .step()
+    .invoke_participant("GetUsers", _user)
+    .commit()
+   )
+   ```
+   
+   We run SAGA with SagaManager as follows:
+      ```python
+   ...
+   saga = await self.saga_manager.run(
+        GET_USER,
+        context=SagaContext(
+            user_id=1234,
+        ),
+    )
+   
+   # get results:
+   user = saga.context["user"])
+   ...
+   ```
+   
+   In invoke_participant SAGA will send the Command `GetUser` passing the query containing user_id. It will be received by the microservice that has that 
+   command defined. Logically it should be the **microservice User**.
