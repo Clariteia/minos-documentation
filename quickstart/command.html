@@ -95,6 +95,7 @@
 <li class="toctree-l2"><a class="reference internal" href="setup.html">Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aggregate.html">Modeling the Domain: Aggregates</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Exposing Operations: Command Service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#setting-up-the-service">Setting up the service!</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#exposing-exam-creation">Exposing <code class="docutils literal notranslate"><span class="pre">Exam</span></code> creation…</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#adding-exam-questions">Adding <code class="docutils literal notranslate"><span class="pre">Exam</span></code> questions!</a></li>
@@ -182,9 +183,16 @@
             
   <div class="section" id="exposing-operations-command-service">
 <h1>Exposing Operations: Command Service<a class="headerlink" href="#exposing-operations-command-service" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>After being learned how to setup a <code class="docutils literal notranslate"><span class="pre">minos</span></code> microservice and knowing the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> basics and being able to start working on the domain model, the next step is to expose the implemented functionality outside, to be used both by another microservices and external clients! One of the main advantages of using <code class="docutils literal notranslate"><span class="pre">minos</span></code> is that it is able to expose endpoints over different interfaces transparently, so that the infrastructure details (that in many cases require a big effort) are handled by the framework and the business logic becomes into the leading actor of the microservice.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework is based on the <a class="reference external" href="https://martinfowler.com/bliki/CQRS.html">CQRS</a> pattern, which is characterised by the partition of the system into two main parts: the one focused into <code class="docutils literal notranslate"><span class="pre">Command</span></code> processing and the one focused into <code class="docutils literal notranslate"><span class="pre">Query</span></code> resolving. Following the event driven ideas, the <code class="docutils literal notranslate"><span class="pre">CommandService</span></code> is the one who processes requests that modify the internal state of the microservice, with changes on the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code>, that generate events, that can be handled by the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code>, who updates its own query-oriented database. Then, the requests that will not change the state of the microservice (so that, the ones that are read-only) should be resolved by the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> who asks its own database.</p>
+<p>The rest of the section is focused into the <code class="docutils literal notranslate"><span class="pre">CommandService</span></code> and the basic syntax to expose endpoints. Next, the <a class="reference internal" href="query.html"><span class="doc">Exposing Information: Query Service</span></a> guide is fully focused into the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> and how to read and update the user-defined query database.</p>
+</div>
 <div class="section" id="setting-up-the-service">
 <h2>Setting up the service!<a class="headerlink" href="#setting-up-the-service" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>The setup process of the services is mostly equivalent both for the <code class="docutils literal notranslate"><span class="pre">CommandService</span></code> and the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> as they share the same interfaces configuration. Currently, the currently supported ones are the <em>HTTP REST</em> and the <em>Kafka</em>‘s broker, but there are plans to increase the list with <em>gRPC</em>, <em>RabbitMQ</em>, etc.</p>
+<p>The second important part in the configuration file is the <code class="docutils literal notranslate"><span class="pre">commands</span></code> and <code class="docutils literal notranslate"><span class="pre">queries</span></code>, in which the <code class="docutils literal notranslate"><span class="pre">CommandService</span></code> an <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> classes are being setup.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># config.yml</span>
 
 <span class="nt">rest</span><span class="p">:</span>
@@ -201,41 +209,60 @@
     <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5432</span>
     <span class="nt">records</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1000</span>
     <span class="nt">retry</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
-<span class="nt">queries</span><span class="p">:</span>
-  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.ExamQueryService</span>
 <span class="nt">commands</span><span class="p">:</span>
-  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.ExamCommandService</span>
+  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.commands.ExamCommandService</span>
+<span class="nt">queries</span><span class="p">:</span>
+  <span class="nt">service</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.queries.ExamQueryService</span>
 <span class="nn">...</span>
 </pre></div>
 </div>
-<p>TODO</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/commands.py&quot;&quot;&quot;</span>
-
-<span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="p">(</span>
+<p>After being set up the services’ configuration, the next part is to start writing the code itself! In this case, the command service is defined into the <code class="docutils literal notranslate"><span class="pre">src/commands.py</span></code> file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">CommandService</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Request</span><span class="p">,</span>
-    <span class="n">Response</span><span class="p">,</span>
-    <span class="n">enroute</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="kn">from</span> <span class="nn">..aggregates</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Exam</span><span class="p">,</span>
 <span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">ExamCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Exam Command Service class&quot;&quot;&quot;</span>
+    <span class="k">pass</span>
 </pre></div>
 </div>
+<p>The most important part here is the <code class="docutils literal notranslate"><span class="pre">minos.cqrs.CommandService</span></code> import. In <code class="docutils literal notranslate"><span class="pre">minos</span></code>, the <code class="docutils literal notranslate"><span class="pre">cqrs</span></code> module is the one who implements the abstract service classes, both for commands and for queries.</p>
+<p>Another important part is how to expose and set up the endpoints. In this case, <code class="docutils literal notranslate"><span class="pre">minos.networks</span></code> provides the <code class="docutils literal notranslate"><span class="pre">&#64;enroute</span></code> decorator, that can be seen as a hierarchical decorator composed by the following parts:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.rest.command(url,</span> <span class="pre">method)</span></code>: Exposes a <em>Command</em> request over the <em>REST</em> interface.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.rest.query(url,</span> <span class="pre">method)</span></code>: Exposes a <em>Query</em> request over the <em>REST</em> interface.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.broker.command(topic)</span></code>:Exposes a <em>Command</em> request over the <em>Broker</em> interface.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.broker.query(topic)</span></code>:Exposes a <em>Query</em> request over the <em>Broker</em> interface.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.broker.event(topic)</span></code>: Exposes an <em>Event</em> request over the <em>Broker</em> interface.</p></li>
+</ul>
+<p>After being learnt how to setup the services on the configuration file and take an overview over the <code class="docutils literal notranslate"><span class="pre">CommandService</span></code> base class and the <code class="docutils literal notranslate"><span class="pre">&#64;enroute</span></code> decorator, it’s time to introduce the expected function’s prototype for each exposed endpoint:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Request</span><span class="p">,</span>
+    <span class="n">Response</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">MyService</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">make_foo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Response</span><span class="p">]:</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">minos.networks.Request</span></code> and <code class="docutils literal notranslate"><span class="pre">minos.networks.Response</span></code> are the classes with the responsibility to provide access to the received request itself and to build the given response. The main advantage of these two classes are that they are able to fully isolate the surrounding network interface that received the request, so that the code keeps much more simple. One thing to notice is that the endpoint does not need to necessarily return any value because there are some cases in which has no sense from the business logic perspective. Also, it’s important to notice that the <code class="docutils literal notranslate"><span class="pre">minos.networks.ResponseException</span></code> provides a way to notify that there was some kind of situation that does not allow resolve the request successfully.</p>
 </div>
 <div class="section" id="exposing-exam-creation">
 <h2>Exposing <code class="docutils literal notranslate"><span class="pre">Exam</span></code> creation…<a class="headerlink" href="#exposing-exam-creation" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EntitySet</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">enroute</span><span class="p">,</span>
     <span class="n">Response</span><span class="p">,</span>
     <span class="n">Request</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.aggregates</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Exam</span><span class="p">,</span>
 <span class="p">)</span>
 
 
@@ -268,6 +295,9 @@
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/commands.py&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EntitySet</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">CommandService</span><span class="p">,</span>
 <span class="p">)</span>
@@ -283,7 +313,15 @@
 
 
 <span class="k">class</span> <span class="nc">ExamCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Exam Command Service class&quot;&quot;&quot;</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;/exams&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">)</span>
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;CreateExam&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">create_exam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+
+        <span class="n">exam</span> <span class="o">=</span> <span class="k">await</span> <span class="n">Exam</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;subject&quot;</span><span class="p">],</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span> <span class="n">EntitySet</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">exam</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
