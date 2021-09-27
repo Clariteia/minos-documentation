@@ -194,12 +194,10 @@ snapshot:
   password: min0s
   host: localhost
   port: 5432
-events:
-  service: src.ExamQueryService
 queries:
-  service: src.ExamQueryService
+  service: src.queries.ExamQueryService
 commands:
-  service: src.ExamCommandService
+  service: src.commands.ExamCommandService
 saga:
   storage:
     path: ./exam.lmdb
