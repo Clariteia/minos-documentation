@@ -99,7 +99,11 @@
 <li class="toctree-l2"><a class="reference internal" href="ports_and_adapters.html">Ports and Adapters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rest_handler.html">REST Handler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="saga.html">SAGA</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Decorators</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Decorators</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-are-decorators">What are decorators?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#minos-decorators"><code class="docutils literal notranslate"><span class="pre">Minos</span></code> decorators</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
@@ -174,6 +178,38 @@
             
   <div class="section" id="decorators">
 <h1>Decorators<a class="headerlink" href="#decorators" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-are-decorators">
+<h2>What are decorators?<a class="headerlink" href="#what-are-decorators" title="Permalink to this headline">¶</a></h2>
+<p>Decorators is an elegant syntactic way that Python provides for extending what other functions do. Using the <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> keyword one can annotate another function using such decorators.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Minos</span></code> uses decorators to extend the functionality of certain methods and eliminate some boilerplate code that other way would distract the developer from its actual goal: building and application. Mainly, those decorators are used in the Command and Query services to define the means through which they are called.</p>
+<p>Let’s consider the following example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;CreateProduct&quot;</span><span class="p">)</span>
+<span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;/products&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">create_product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>Here we have a <code class="docutils literal notranslate"><span class="pre">create_product()</span></code> command, which deals with the business logic of creating a product within our system. By using the <code class="docutils literal notranslate"><span class="pre">&#64;enroute</span></code> decorator, <code class="docutils literal notranslate"><span class="pre">Minos</span></code> extends its functionality and attaches that function to a REST endpoint as well as to an event.</p>
+</div>
+<div class="section" id="minos-decorators">
+<h2><code class="docutils literal notranslate"><span class="pre">Minos</span></code> decorators<a class="headerlink" href="#minos-decorators" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">&#64;enroute</span></code> decorator is divided in the following categories:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.broker</span></code> deals with event subscription</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.broker.command(event:</span> <span class="pre">str)</span></code> attaches the method to a command invoked through the broker.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.broker.query(event:</span> <span class="pre">str)</span></code> attaches the method to a query invoked through the broker.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.broker.event(event:</span> <span class="pre">str)</span></code> attaches the method to an event published by a microservice.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.rest</span></code> deals with REST endpoint definition</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.rest.command(endpoint:</span> <span class="pre">str,</span> <span class="pre">verb:</span> <span class="pre">str)</span></code> attaches the method to a REST endpoint in the command service.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.rest.query(endpoint:</span> <span class="pre">str,</span> <span class="pre">verb:</span> <span class="pre">str)</span></code> attaches the method to a REST endpoint in the query service.</p></li>
+</ul>
+</li>
+</ul>
+</div>
 </div>
 
 
