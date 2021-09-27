@@ -285,15 +285,11 @@
 <h2>Adding <code class="docutils literal notranslate"><span class="pre">Exam</span></code> questions!<a class="headerlink" href="#adding-exam-questions" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">EntitySet</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">enroute</span><span class="p">,</span>
-    <span class="n">Response</span><span class="p">,</span>
-    <span class="n">Request</span><span class="p">,</span>
+    <span class="n">ValueObjectSet</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.aggregates</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Exam</span><span class="p">,</span>
+    <span class="n">Question</span><span class="p">,</span>
+    <span class="n">Answer</span><span class="p">,</span>
 <span class="p">)</span>
 
 
@@ -303,7 +299,15 @@
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;/exams/</span><span class="si">{uuid}</span><span class="s2">/questions&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">)</span>
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;AddExamQuestion&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">add_question</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
-        <span class="o">...</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+
+        <span class="n">exam</span> <span class="o">=</span> <span class="k">await</span> <span class="n">Exam</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;exam&quot;</span><span class="p">])</span>
+        <span class="n">answers</span> <span class="o">=</span> <span class="n">ValueObjectSet</span><span class="p">([</span><span class="n">Answer</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span> <span class="n">raw</span><span class="p">[</span><span class="s2">&quot;correct&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">raw</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;answer&quot;</span><span class="p">]])</span>
+        <span class="n">question</span> <span class="o">=</span> <span class="n">Question</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span> <span class="n">answers</span><span class="p">)</span>
+        <span class="n">exam</span><span class="o">.</span><span class="n">questions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">question</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">question</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>TODO</p>
@@ -352,6 +356,7 @@
 
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">EntitySet</span><span class="p">,</span>
+    <span class="n">ValueObjectSet</span><span class="p">,</span>
     <span class="n">MinosSnapshotAggregateNotFoundException</span><span class="p">,</span>
     <span class="n">MinosSnapshotDeletedAggregateException</span><span class="p">,</span>
 <span class="p">)</span>
@@ -365,8 +370,10 @@
     <span class="n">enroute</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">..aggregates</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span> <span class="nn">.aggregates</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Exam</span><span class="p">,</span>
+    <span class="n">Question</span><span class="p">,</span>
+    <span class="n">Answer</span><span class="p">,</span>
 <span class="p">)</span>
 
 
@@ -384,7 +391,15 @@
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;/exams/</span><span class="si">{uuid}</span><span class="s2">/questions&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">)</span>
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;AddExamQuestion&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">add_question</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
-        <span class="o">...</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+
+        <span class="n">exam</span> <span class="o">=</span> <span class="k">await</span> <span class="n">Exam</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;exam&quot;</span><span class="p">])</span>
+        <span class="n">answers</span> <span class="o">=</span> <span class="n">ValueObjectSet</span><span class="p">([</span><span class="n">Answer</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span> <span class="n">raw</span><span class="p">[</span><span class="s2">&quot;correct&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">raw</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;answer&quot;</span><span class="p">]])</span>
+        <span class="n">question</span> <span class="o">=</span> <span class="n">Question</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span> <span class="n">answers</span><span class="p">)</span>
+        <span class="n">exam</span><span class="o">.</span><span class="n">questions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">question</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">exam</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">question</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
 
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;/exams&quot;</span><span class="p">,</span> <span class="s2">&quot;DELETE&quot;</span><span class="p">)</span>
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;DeleteExam&quot;</span><span class="p">)</span>
