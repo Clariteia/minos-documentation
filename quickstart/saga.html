@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
 
   
   
@@ -98,7 +99,9 @@
 <li class="toctree-l2"><a class="reference internal" href="query.html">Exposing Information: Query Service</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Building Interactions: Sagas</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mark-microservice"><code class="docutils literal notranslate"><span class="pre">mark</span></code> microservice</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#attemptmicroservice"><code class="docutils literal notranslate"><span class="pre">Attempt</span></code>microservice</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#saga-creation-in-exammicroservice">SAGA creation in <code class="docutils literal notranslate"><span class="pre">Exam</span></code>microservice</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#saga-execution-in-exammicroservice">SAGA execution in <code class="docutils literal notranslate"><span class="pre">Exam</span></code>microservice</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="testing.html">Testing</a></li>
@@ -178,13 +181,256 @@
             
   <div class="section" id="building-interactions-sagas">
 <h1>Building Interactions: Sagas<a class="headerlink" href="#building-interactions-sagas" title="Permalink to this headline">¶</a></h1>
+<p>In a microservices architecture, it is necessary to interact with other services, in this case using SAGAs.</p>
+<p>In this section we will define a fictitious microservice <code class="docutils literal notranslate"><span class="pre">Attempt</span></code> and how to compose and call a SAGA.</p>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>Currently we have the Exam microservice with the following Aggregates structure:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;exam/src/aggregates.py&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Aggregate</span><span class="p">,</span>
+    <span class="n">AggregateRef</span><span class="p">,</span>
+    <span class="n">Entity</span><span class="p">,</span>
+    <span class="n">EntitySet</span><span class="p">,</span>
+    <span class="n">ModelRef</span><span class="p">,</span>
+    <span class="n">ValueObject</span><span class="p">,</span>
+    <span class="n">ValueObjectSet</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Exam</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
+    <span class="n">subject</span><span class="p">:</span> <span class="n">ModelRef</span><span class="p">[</span><span class="n">Subject</span><span class="p">]</span>
+    <span class="n">questions</span><span class="p">:</span> <span class="n">EntitySet</span><span class="p">[</span><span class="n">Question</span><span class="p">]</span>
+    <span class="n">user</span><span class="p">:</span> <span class="n">ModelRef</span><span class="p">[</span><span class="n">User</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">parse_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">validate_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">6</span>
+
+<span class="k">class</span> <span class="nc">Subject</span><span class="p">(</span><span class="n">AggregateRef</span><span class="p">):</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+
+
+<span class="k">class</span> <span class="nc">Question</span><span class="p">(</span><span class="n">Entity</span><span class="p">):</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">answers</span><span class="p">:</span> <span class="n">ValueObjectSet</span><span class="p">[</span><span class="n">Answer</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">Answer</span><span class="p">(</span><span class="n">ValueObject</span><span class="p">):</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">correct</span><span class="p">:</span> <span class="nb">bool</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">AggregateRef</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+</pre></div>
 </div>
-<div class="section" id="mark-microservice">
-<h2><code class="docutils literal notranslate"><span class="pre">mark</span></code> microservice<a class="headerlink" href="#mark-microservice" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>But in order to make an example with SAGA we will need another fictitious microservice to simulate a communication.</p>
+<p>In this case we are going to create one called attempts, in order to control for example that a user does not exceed
+the number of attempts of an exam.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;attempt/src/aggregates.py&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Aggregate</span><span class="p">,</span>
+    <span class="n">AggregateRef</span><span class="p">,</span>
+    <span class="n">Entity</span><span class="p">,</span>
+    <span class="n">EntitySet</span><span class="p">,</span>
+    <span class="n">ModelRef</span><span class="p">,</span>
+    <span class="n">ValueObject</span><span class="p">,</span>
+    <span class="n">ValueObjectSet</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Attempt</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
+    <span class="n">user</span><span class="p">:</span> <span class="n">ModelRef</span><span class="p">[</span><span class="n">User</span><span class="p">]</span>
+    <span class="n">exam</span><span class="p">:</span> <span class="n">ModelRef</span><span class="p">[</span><span class="n">Exam</span><span class="p">]</span>
+    <span class="n">quantity</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="k">def</span> <span class="nf">validate_quantity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantity</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">quantity</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">6</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">AggregateRef</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+
+
+<span class="k">class</span> <span class="nc">Exam</span><span class="p">(</span><span class="n">AggregateRef</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exam reference&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="attemptmicroservice">
+<h2><code class="docutils literal notranslate"><span class="pre">Attempt</span></code>microservice<a class="headerlink" href="#attemptmicroservice" title="Permalink to this headline">¶</a></h2>
+<p>We need to define the Command to return if the number of attempts to perform the test for a user has been exceeded:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;attempt/src/commands/services.py&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UUID</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EntitySet</span><span class="p">,</span>
+    <span class="n">Condition</span><span class="p">,</span>
+    <span class="n">MinosException</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CommandService</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Request</span><span class="p">,</span>
+    <span class="n">Response</span><span class="p">,</span>
+    <span class="n">enroute</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.saga</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SagaContext</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..aggregates</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Attempt</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.sagas</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ADD_CART_ITEM</span><span class="p">,</span>
+    <span class="n">DELETE_CART</span><span class="p">,</span>
+    <span class="n">REMOVE_CART_ITEM</span><span class="p">,</span>
+    <span class="n">UPDATE_CART_ITEM</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">AttemptCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cart Command Service class&quot;&quot;&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;GetUserAttempts&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_user_attempts</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Create a new cart.</span>
+<span class="sd">        :param request: A request instance containing the information to build a payment instance.</span>
+<span class="sd">        :return: A response containing the newly created payment instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">]</span>
+        <span class="n">exam</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;exam&quot;</span><span class="p">]</span>
+
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="o">.</span><span class="n">AND</span><span class="p">(</span>
+            <span class="n">Condition</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">user</span><span class="p">),</span>
+            <span class="n">Condition</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">(</span><span class="s2">&quot;exam&quot;</span><span class="p">,</span> <span class="n">exam</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="n">Attempt</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">attempt</span><span class="o">.</span><span class="n">quantity</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">MinosException</span><span class="p">(</span><span class="s2">&quot;The maximum number of attempts has been exceeded.&quot;</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">attempt</span><span class="o">.</span><span class="n">quantity</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="saga-creation-in-exammicroservice">
+<h2>SAGA creation in <code class="docutils literal notranslate"><span class="pre">Exam</span></code>microservice<a class="headerlink" href="#saga-creation-in-exammicroservice" title="Permalink to this headline">¶</a></h2>
+<p>Now we can create the SAGA that would call the <code class="docutils literal notranslate"><span class="pre">GetUserAttempts</span></code> command of the Attempt microservice:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;exam/src/commands/sagas.py&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">minos.saga</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Saga</span><span class="p">,</span>
+    <span class="n">SagaContext</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">src.aggregates</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Exam</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Aggregate</span><span class="p">,</span>
+    <span class="n">Model</span><span class="p">,</span>
+    <span class="n">ModelType</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UUID</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">AttemptQuery</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;PaymentQuery&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="s2">&quot;exam&quot;</span><span class="p">:</span> <span class="n">UUID</span><span class="p">})</span>
+
+<span class="k">def</span> <span class="nf">_prepare_data</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">SagaContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Model</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">AttemptQuery</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="s2">&quot;user_uuid&quot;</span><span class="p">],</span> <span class="n">context</span><span class="p">[</span><span class="s2">&quot;exam_uuid&quot;</span><span class="p">])</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">commit_result</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">SagaContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SagaContext</span><span class="p">:</span>
+    <span class="n">exam</span> <span class="o">=</span> <span class="k">await</span> <span class="n">Exam</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">SagaContext</span><span class="p">(</span><span class="n">exam</span><span class="o">=</span><span class="n">exam</span><span class="p">)</span>
+
+<span class="n">GET_USER_ATTEMPTS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Saga</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;GetUserAttempts&quot;</span><span class="p">,</span> <span class="n">_prepare_data</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">commit_result</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="saga-execution-in-exammicroservice">
+<h2>SAGA execution in <code class="docutils literal notranslate"><span class="pre">Exam</span></code>microservice<a class="headerlink" href="#saga-execution-in-exammicroservice" title="Permalink to this headline">¶</a></h2>
+<p>When sending the test results we will check that the user has not exceeded the limit of attempts, if so, an exception
+is thrown.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;exam/src/commands/services.py&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">minos.cqrs</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CommandService</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Request</span><span class="p">,</span>
+    <span class="n">Response</span><span class="p">,</span>
+    <span class="n">ResponseException</span><span class="p">,</span>
+    <span class="n">enroute</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">minos.saga</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SagaContext</span><span class="p">,</span>
+    <span class="n">SagaStatus</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..aggregates</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PaymentDetail</span><span class="p">,</span>
+    <span class="n">ShipmentDetail</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.sagas</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GET_USER_ATTEMPTS</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">ExamCommandService</span><span class="p">(</span><span class="n">CommandService</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exam Service class&quot;&quot;&quot;</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;/exams&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">)</span>
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;CreateExam&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">submit_exam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+        <span class="n">user_uuid</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;user_uuid&quot;</span><span class="p">]</span>
+        <span class="n">exam_uuid</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;exam_uuid&quot;</span><span class="p">]</span>
+
+        <span class="n">saga</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">saga_manager</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">GET_USER_ATTEMPTS</span><span class="p">,</span>
+            <span class="n">context</span><span class="o">=</span><span class="n">SagaContext</span><span class="p">(</span>
+                <span class="n">user_uuid</span><span class="o">=</span><span class="n">user_uuid</span><span class="p">,</span>
+                <span class="n">exam_uuid</span><span class="o">=</span><span class="n">exam_uuid</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">saga</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">SagaStatus</span><span class="o">.</span><span class="n">Finished</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">saga</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="s2">&quot;exam&quot;</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ResponseException</span><span class="p">(</span><span class="s2">&quot;An error occurred during exam submit.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 
