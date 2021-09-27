@@ -422,6 +422,7 @@ from minos.common import (
     ValueObjectSet,
 )
 
+
 class Question(Entity):
     title: str
     answers: ValueObject[Answer]
@@ -471,6 +472,9 @@ After being described step by step the main features of the `Aggregate` class, a
 from __future__ import (
     annotations,
 )
+from datetime import (
+    timedelta,
+)
 from typing import (
     Any,
 )
@@ -487,6 +491,8 @@ from minos.common import (
 
 
 class Exam(Aggregate):
+    name: str
+    duration: timedelta
     subject: ModelRef[Subject]
     questions: EntitySet[Question]
     
@@ -497,6 +503,7 @@ class Exam(Aggregate):
     
     def validate_name(self, value: Any) -> bool:
         return isinstance(value, str) and len(value) >= 6
+
 
 class Subject(AggregateRef):
     title: str

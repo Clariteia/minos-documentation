@@ -4,7 +4,34 @@
 
 TODO
 
-## Example
+```python
+"""src/queries.py"""
+
+from minos.cqrs import (
+    QueryService,
+)
+from minos.networks import (
+    Request,
+    Response,
+    enroute,
+)
+
+
+class ExamQueryService(QueryService):
+    ...
+```
+
+TODO
+
+## Get the longer exams...
+
+TODO
+
+## Get the exams with more questions...
+
+TODO
+
+## Summary
 
 TODO
 
@@ -20,11 +47,7 @@ from minos.networks import (
     enroute,
 )
 
-from ..aggregates import (
-    Exam,
-)
-
 
 class ExamQueryService(QueryService):
-    """Exam Query Service class"""
+    ...
 ```
