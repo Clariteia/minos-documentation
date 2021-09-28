@@ -181,62 +181,15 @@
             
   <div class="section" id="building-interactions-sagas">
 <h1>Building Interactions: Sagas<a class="headerlink" href="#building-interactions-sagas" title="Permalink to this headline">¶</a></h1>
-<p>In a microservices architecture, it is necessary to interact with other services, in this case using SAGAs.</p>
+<p>Implement each business transaction that spans multiple services is a saga. A saga is a sequence of local transactions.
+Each local transaction updates the database and publishes a message or event to trigger the next local transaction in
+the saga. If a local transaction fails because it violates a business rule then the saga executes a series of
+compensating transactions that undo the changes that were made by the preceding local transactions.</p>
 <p>In this section we will define a fictitious microservice <code class="docutils literal notranslate"><span class="pre">Attempt</span></code> and how to compose and call a SAGA.</p>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>Currently we have the Exam microservice with the following Aggregates structure:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;exam/src/aggregates.py&quot;&quot;&quot;</span>
-
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">annotations</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Any</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Aggregate</span><span class="p">,</span>
-    <span class="n">AggregateRef</span><span class="p">,</span>
-    <span class="n">Entity</span><span class="p">,</span>
-    <span class="n">EntitySet</span><span class="p">,</span>
-    <span class="n">ModelRef</span><span class="p">,</span>
-    <span class="n">ValueObject</span><span class="p">,</span>
-    <span class="n">ValueObjectSet</span><span class="p">,</span>
-<span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">Exam</span><span class="p">(</span><span class="n">Aggregate</span><span class="p">):</span>
-    <span class="n">subject</span><span class="p">:</span> <span class="n">ModelRef</span><span class="p">[</span><span class="n">Subject</span><span class="p">]</span>
-    <span class="n">questions</span><span class="p">:</span> <span class="n">EntitySet</span><span class="p">[</span><span class="n">Question</span><span class="p">]</span>
-    <span class="n">user</span><span class="p">:</span> <span class="n">ModelRef</span><span class="p">[</span><span class="n">User</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="nf">parse_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">value</span>
-        <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">validate_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">6</span>
-
-<span class="k">class</span> <span class="nc">Subject</span><span class="p">(</span><span class="n">AggregateRef</span><span class="p">):</span>
-    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
-
-
-<span class="k">class</span> <span class="nc">Question</span><span class="p">(</span><span class="n">Entity</span><span class="p">):</span>
-    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">answers</span><span class="p">:</span> <span class="n">ValueObjectSet</span><span class="p">[</span><span class="n">Answer</span><span class="p">]</span>
-
-
-<span class="k">class</span> <span class="nc">Answer</span><span class="p">(</span><span class="n">ValueObject</span><span class="p">):</span>
-    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">correct</span><span class="p">:</span> <span class="nb">bool</span>
-
-<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">AggregateRef</span><span class="p">):</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-</pre></div>
-</div>
-<p>But in order to make an example with SAGA we will need another fictitious microservice to simulate a communication.</p>
+<p>The Exam aggregate can be viewed at <a class="reference internal" href="aggregate.html"><span class="doc">Modeling the Domain: Aggregates</span></a></p>
+<p>In order to make an example with SAGA we will need another fictitious microservice to simulate a communication.</p>
 <p>In this case we are going to create one called attempts, in order to control for example that a user does not exceed
 the number of attempts of an exam.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;attempt/src/aggregates.py&quot;&quot;&quot;</span>
@@ -276,11 +229,7 @@ the number of attempts of an exam.</p>
 <div class="section" id="attemptmicroservice">
 <h2><code class="docutils literal notranslate"><span class="pre">Attempt</span></code>microservice<a class="headerlink" href="#attemptmicroservice" title="Permalink to this headline">¶</a></h2>
 <p>We need to define the Command to return if the number of attempts to perform the test for a user has been exceeded:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;attempt/src/commands/services.py&quot;&quot;&quot;</span>
-
-<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">UUID</span><span class="p">,</span>
-<span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;attempt/src/commands.py&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">EntitySet</span><span class="p">,</span>
@@ -340,8 +289,21 @@ the number of attempts of an exam.</p>
 </div>
 <div class="section" id="saga-creation-in-exammicroservice">
 <h2>SAGA creation in <code class="docutils literal notranslate"><span class="pre">Exam</span></code>microservice<a class="headerlink" href="#saga-creation-in-exammicroservice" title="Permalink to this headline">¶</a></h2>
+<p>The saga consists of steps and are those that define the operations to be performed in an orderly way to communicate with other
+services. These steps normally contain the call to the corresponding service (<code class="docutils literal notranslate"><span class="pre">.invoke_participant(&quot;CreateOrder&quot;)</span></code>) and
+optionally a compensation (<code class="docutils literal notranslate"><span class="pre">.with_compensation(&quot;DeleteOrder&quot;,</span> <span class="pre">delete_order_callback)</span></code>) in case an error occurs or the
+operation cannot be performed by the business logic. It also optionally has a function in charge of
+receiving the response from the invoked service (which is used in case the response has to be processed).</p>
+<p>For a SAGA instance to be valid, a <code class="docutils literal notranslate"><span class="pre">step</span></code>, <code class="docutils literal notranslate"><span class="pre">invoke_participant</span></code> and <code class="docutils literal notranslate"><span class="pre">commit</span></code> are required. So the minimum structure of
+a SAGA is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Saga</span><span class="p">()</span>
+<span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="o">.</span><span class="n">invoke_participant</span><span class="p">(</span><span class="s2">&quot;GetUserAttempts&quot;</span><span class="p">)</span>
+<span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>Now we can create the SAGA that would call the <code class="docutils literal notranslate"><span class="pre">GetUserAttempts</span></code> command of the Attempt microservice:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;exam/src/commands/sagas.py&quot;&quot;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;exam/src/commands.py&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">minos.saga</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Saga</span><span class="p">,</span>
@@ -377,6 +339,14 @@ the number of attempts of an exam.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
+<ol class="arabic">
+<li><p>Normally if you want to send information together with the command, ModelType.build is used:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AttemptQuery</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;PaymentQuery&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="s2">&quot;exam&quot;</span><span class="p">:</span> <span class="n">UUID</span><span class="p">})</span>
+</pre></div>
+</div>
+</li>
+<li><p>To see the structure of the SAGA in detail visit <a class="reference internal" href="../architecture/saga.html"><span class="doc">SAGA</span></a></p></li>
+</ol>
 </div>
 <div class="section" id="saga-execution-in-exammicroservice">
 <h2>SAGA execution in <code class="docutils literal notranslate"><span class="pre">Exam</span></code>microservice<a class="headerlink" href="#saga-execution-in-exammicroservice" title="Permalink to this headline">¶</a></h2>
