@@ -1,65 +1,16 @@
 # Building Interactions: Sagas
 
-In a microservices architecture, it is necessary to interact with other services, in this case using SAGAs.
+Implement each business transaction that spans multiple services is a saga. A saga is a sequence of local transactions.
+Each local transaction updates the database and publishes a message or event to trigger the next local transaction in 
+the saga. If a local transaction fails because it violates a business rule then the saga executes a series of 
+compensating transactions that undo the changes that were made by the preceding local transactions.
 
 In this section we will define a fictitious microservice `Attempt` and how to compose and call a SAGA.
 
 ## Introduction
-Currently we have the Exam microservice with the following Aggregates structure:
+The Exam aggregate can be viewed at :doc:`/quickstart/aggregate`
 
-```python
-"""exam/src/aggregates.py"""
-
-from __future__ import (
-    annotations,
-)
-from typing import (
-    Any,
-)
-
-from minos.common import (
-    Aggregate,
-    AggregateRef,
-    Entity,
-    EntitySet,
-    ModelRef,
-    ValueObject,
-    ValueObjectSet,
-)
-
-
-class Exam(Aggregate):
-    subject: ModelRef[Subject]
-    questions: EntitySet[Question]
-    user: ModelRef[User]
-    
-    def parse_name(self, value: Any) -> Any:
-        if not isinstance(value, str):
-            return value
-        return value.title()
-    
-    def validate_name(self, value: Any) -> bool:
-        return isinstance(value, str) and len(value) >= 6
-
-class Subject(AggregateRef):
-    title: str
-
-
-class Question(Entity):
-    title: str
-    answers: ValueObjectSet[Answer]
-
-
-class Answer(ValueObject):
-    text: str
-    correct: bool
-
-class User(AggregateRef):
-    name: str
-
-```
-
-But in order to make an example with SAGA we will need another fictitious microservice to simulate a communication.
+In order to make an example with SAGA we will need another fictitious microservice to simulate a communication.
 
 In this case we are going to create one called attempts, in order to control for example that a user does not exceed 
 the number of attempts of an exam.
@@ -104,11 +55,7 @@ class Exam(AggregateRef):
 We need to define the Command to return if the number of attempts to perform the test for a user has been exceeded:
 
 ```python
-"""attempt/src/commands/services.py"""
-
-from uuid import (
-    UUID,
-)
+"""attempt/src/commands.py"""
 
 from minos.common import (
     EntitySet,
@@ -168,10 +115,25 @@ class AttemptCommandService(CommandService):
 
 
 ## SAGA creation in `Exam`microservice
+The saga consists of steps and are those that define the operations to be performed in an orderly way to communicate with other 
+services. These steps normally contain the call to the corresponding service (`.invoke_participant("CreateOrder")`) and 
+optionally a compensation (`.with_compensation("DeleteOrder", delete_order_callback)`) in case an error occurs or the 
+operation cannot be performed by the business logic. It also optionally has a function in charge of 
+receiving the response from the invoked service (which is used in case the response has to be processed).
+
+For a SAGA instance to be valid, a `step`, `invoke_participant` and `commit` are required. So the minimum structure of 
+a SAGA is:
+```python
+Saga()
+.step()
+.invoke_participant("GetUserAttempts")
+.commit()
+```
+
 Now we can create the SAGA that would call the `GetUserAttempts` command of the Attempt microservice:
 
 ```python
-"""exam/src/commands/sagas.py"""
+"""exam/src/commands.py"""
 
 from minos.saga import (
     Saga,
@@ -207,6 +169,14 @@ GET_USER_ATTEMPTS = (
 )
 
 ```
+
+1. Normally if you want to send information together with the command, ModelType.build is used:
+
+    ```python
+    AttemptQuery = ModelType.build("PaymentQuery", {"user": UUID, "exam": UUID})
+    ```
+
+2. To see the structure of the SAGA in detail visit :doc:`/architecture/saga`
 
 ## SAGA execution in `Exam`microservice
 When sending the test results we will check that the user has not exceeded the limit of attempts, if so, an exception 
