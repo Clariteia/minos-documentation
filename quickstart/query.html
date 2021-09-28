@@ -98,9 +98,9 @@
 <li class="toctree-l2"><a class="reference internal" href="command.html">Exposing Operations: Command Service</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Exposing Information: Query Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#setting-up-the-service">Setting up the service!</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#get-the-longest-exams">Get the longest exams…</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#get-the-subjects-with-more-exams">Get the subjects with more exams…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setting-up-the-environment">Setting up the environment!</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#handling-exam-events">Handling <code class="docutils literal notranslate"><span class="pre">Exam</span></code> events…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#defining-exam-related-queries">Defining <code class="docutils literal notranslate"><span class="pre">Exam</span></code>-related queries…</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
 </li>
@@ -186,8 +186,8 @@
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
 </div>
-<div class="section" id="setting-up-the-service">
-<h2>Setting up the service!<a class="headerlink" href="#setting-up-the-service" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="setting-up-the-environment">
+<h2>Setting up the environment!<a class="headerlink" href="#setting-up-the-environment" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># config.yml</span>
 <span class="nt">service</span><span class="p">:</span>
@@ -229,30 +229,156 @@
 </pre></div>
 </div>
 <p>TODO</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">timedelta</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">UUID</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ModelType</span><span class="p">,</span>
-<span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryService</span><span class="p">(</span><span class="n">QueryService</span><span class="p">):</span>
 
+    <span class="nd">@inject</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repository</span><span class="p">:</span> <span class="n">ExamQueryRepository</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;query_repository&quot;</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span> <span class="o">=</span> <span class="n">repository</span>
 
-<span class="n">ExamDurationDTO</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;ExamDurationDTO&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;exam&quot;</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">})</span>
-<span class="n">SubjectExamsDTO</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;SubjectExamsDTO&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="s2">&quot;exams&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">})</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryRepository</span><span class="p">(</span><span class="n">MinosSetup</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exam.sqlite&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;CREATE TABLE IF NOT EXISTS exams (uuid TEXT PRIMARY KEY, duration INT, subject TEXT)&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="o">...</span>
 </pre></div>
 </div>
 <p>TODO</p>
 </div>
-<div class="section" id="get-the-longest-exams">
-<h2>Get the longest exams…<a class="headerlink" href="#get-the-longest-exams" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="handling-exam-events">
+<h2>Handling <code class="docutils literal notranslate"><span class="pre">Exam</span></code> events…<a class="headerlink" href="#handling-exam-events" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryService</span><span class="p">(</span><span class="n">QueryService</span><span class="p">):</span>
+    <span class="o">...</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;ExamCreated&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_created</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">(</span><span class="n">resolve_references</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">),</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">))</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;ExamUpdated.duration&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_duration_updated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">update_duration</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">))</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;ExamUpdated.subject&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_subject_updated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">(</span><span class="n">resolve_references</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">update_subject</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">))</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;ExamDeleted&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_deleted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryRepository</span><span class="p">(</span><span class="n">MinosSetup</span><span class="p">):</span>
+
+    <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="n">UUID</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="p">),</span> <span class="n">duration</span> <span class="o">//</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">microseconds</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">subject</span><span class="p">))</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT INTO exams (uuid, duration, subject) VALUES (?, ?, ?)&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">update_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="n">duration</span> <span class="o">//</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">microseconds</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="p">))</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;UPDATE exams SET duration = ? WHERE uuid = ?&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">update_subject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="n">UUID</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">subject</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="p">))</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;UPDATE exams SET subject = ? WHERE uuid = ?&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="n">UUID</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="p">),</span> <span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;DELETE FROM table WHERE uuid = ?&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>TODO</p>
 </div>
-<div class="section" id="get-the-subjects-with-more-exams">
-<h2>Get the subjects with more exams…<a class="headerlink" href="#get-the-subjects-with-more-exams" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="defining-exam-related-queries">
+<h2>Defining <code class="docutils literal notranslate"><span class="pre">Exam</span></code>-related queries…<a class="headerlink" href="#defining-exam-related-queries" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryService</span><span class="p">(</span><span class="n">QueryService</span><span class="p">):</span>
+    <span class="o">...</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;/exams/q/exams-with-more-duration&quot;</span><span class="p">,</span> <span class="s2">&quot;GET&quot;</span><span class="p">)</span>
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;GetExamsWithMoreDuration&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">exams_with_more_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">get_longest_exams</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;/exams/q/subjects-with-more-exams&quot;</span><span class="p">,</span> <span class="s2">&quot;GET&quot;</span><span class="p">)</span>
+    <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;GetSubjectsWithMoreExams&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">subjects_with_more_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">get_subjects_with_more_exams</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ExamDurationDTO</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;ExamDurationDTO&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;exam&quot;</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">})</span>
+<span class="n">SubjectExamsDTO</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;SubjectExamsDTO&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="s2">&quot;exams&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryRepository</span><span class="p">(</span><span class="n">MinosSetup</span><span class="p">):</span>
+
+    <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">get_longest_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">ExamDurationDTO</span><span class="p">]:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT uuid, duration FROM exams ORDER BY duration DESC LIMIT ?&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">ExamDurationDTO</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">get_subjects_with_more_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubjectExamsDTO</span><span class="p">]:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="s2">&quot;SELECT subject, COUNT(uuid) AS exams FROM exams GROUP BY subject ORDER BY exams DESC LIMIT ?&quot;</span><span class="p">,</span> <span class="n">params</span>
+        <span class="p">)</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">SubjectExamsDTO</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
+
+    <span class="o">...</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
