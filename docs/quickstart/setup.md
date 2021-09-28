@@ -159,7 +159,7 @@ service:
     repository: minos.common.PostgreSqlRepository
     saga_manager: minos.saga.SagaManager
     snapshot: minos.common.PostgreSqlSnapshot
-    discovery: minos.networks.DiscoveryConnector
+    # discovery: minos.networks.DiscoveryConnector
     query_repository: src.queries.ExamQueryRepository
   services:
     - minos.networks.ConsumerService
@@ -202,10 +202,11 @@ commands:
 saga:
   storage:
     path: ./exam.lmdb
-discovery:
-  client: minos.networks.MinosDiscoveryClient
-  host: localhost
-  port: 5567
+# TODO: include discovery service into the `docker-compose.yml`
+# discovery:
+#   client: minos.networks.MinosDiscoveryClient
+#   host: localhost
+#   port: 5567
 ```
 
 ## API Gateway and Discovery

@@ -34,7 +34,7 @@ def start(
     )
 ):
     """Start the microservice."""
-    launcher = EntrypointLauncher.from_config(file_path, external_modules=[sys.modules["src"]])
+    launcher = EntrypointLauncher.from_config(file_path, external_modules=[sys.modules["src.queries"]])
     launcher.launch()
 
 
@@ -60,6 +60,37 @@ from .cli import (
 if __name__ == "__main__":
     main()
 ```
+
+### Poetry
+
+TODO
+
+```python
+poetry add typer
+```
+
+TODO
+
+```toml
+# pyproject.toml
+...
+[tool.poetry.scripts]
+microservice = "src.cli:main"
+...
+```
+TODO
+
+```toml
+poetry run microservice start
+```
+
+TODO
+
+### Pipenv
+TODO
+
+### Pip
+TODO
 
 ## Docker
 TODO
