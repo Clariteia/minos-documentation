@@ -61,6 +61,37 @@ if __name__ == "__main__":
     main()
 ```
 
+### Poetry
+
+TODO
+
+```python
+poetry add typer
+```
+
+TODO
+
+```toml
+# pyproject.toml
+...
+[tool.poetry.scripts]
+microservice = "src.cli:main"
+...
+```
+TODO
+
+```toml
+poetry run microservice start
+```
+
+TODO
+
+### Pipenv
+TODO
+
+### Pip
+TODO
+
 ## Docker
 TODO
 

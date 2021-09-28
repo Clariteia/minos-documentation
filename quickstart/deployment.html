@@ -101,7 +101,12 @@
 <li class="toctree-l2"><a class="reference internal" href="testing.html">Testing</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Deployment</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#command-line-interface">Command Line Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#command-line-interface">Command Line Interface</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#poetry">Poetry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pipenv">Pipenv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pip">Pip</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#docker">Docker</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#kubernetes">Kubernetes</a></li>
 </ul>
@@ -237,6 +242,34 @@
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">main</span><span class="p">()</span>
 </pre></div>
+</div>
+<div class="section" id="poetry">
+<h3>Poetry<a class="headerlink" href="#poetry" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">poetry</span> <span class="n">add</span> <span class="n">typer</span>
+</pre></div>
+</div>
+<p>TODO</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="c1"># pyproject.toml</span>
+<span class="p">...</span>
+<span class="k">[tool.poetry.scripts]</span>
+<span class="n">microservice</span> <span class="o">=</span> <span class="s">&quot;src.cli:main&quot;</span>
+<span class="p">...</span>
+</pre></div>
+</div>
+<p>TODO</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">poetry</span> <span class="n">run</span> <span class="n">microservice</span> <span class="n">start</span>
+</pre></div>
+</div>
+<p>TODO</p>
+</div>
+<div class="section" id="pipenv">
+<h3>Pipenv<a class="headerlink" href="#pipenv" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
+</div>
+<div class="section" id="pip">
+<h3>Pip<a class="headerlink" href="#pip" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
 </div>
 </div>
 <div class="section" id="docker">
