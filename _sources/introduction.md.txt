@@ -1,6 +1,6 @@
 # Introduction
 
-## What is `minos`?
+## Description
 
 Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python. 
 Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an 
@@ -9,14 +9,14 @@ asynchronous environment.
 ![minos_architecture](./pictures/minos_architecture.png)
 
 
-## Why use Minos Framework?
+## Advantages
 Minos is an opensource framework oriented to microservices development. It has been developed with the most recognized 
 design patterns and best practices.
 
 It is oriented to make the construction of a microservices architecture simple and to facilitate the developer's work.
 
 
-## What patterns it implements
+## Foundational Patterns
 
 ### Decomposition
 + [Decompose by subdomain](https://microservices.io/patterns/decomposition/decompose-by-subdomain.html): Define services 
