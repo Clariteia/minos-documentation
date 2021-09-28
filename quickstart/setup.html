@@ -338,7 +338,7 @@ convention is to name it as <code class="docutils literal notranslate"><span cla
     <span class="nt">repository</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.common.PostgreSqlRepository</span>
     <span class="nt">saga_manager</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.saga.SagaManager</span>
     <span class="nt">snapshot</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.common.PostgreSqlSnapshot</span>
-    <span class="nt">discovery</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.DiscoveryConnector</span>
+    <span class="c1"># discovery: minos.networks.DiscoveryConnector</span>
     <span class="nt">query_repository</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">src.queries.ExamQueryRepository</span>
   <span class="nt">services</span><span class="p">:</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.ConsumerService</span>
@@ -381,10 +381,11 @@ convention is to name it as <code class="docutils literal notranslate"><span cla
 <span class="nt">saga</span><span class="p">:</span>
   <span class="nt">storage</span><span class="p">:</span>
     <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">./exam.lmdb</span>
-<span class="nt">discovery</span><span class="p">:</span>
-  <span class="nt">client</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minos.networks.MinosDiscoveryClient</span>
-  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
-  <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5567</span>
+<span class="c1"># TODO: include discovery service into the `docker-compose.yml`</span>
+<span class="c1"># discovery:</span>
+<span class="c1">#   client: minos.networks.MinosDiscoveryClient</span>
+<span class="c1">#   host: localhost</span>
+<span class="c1">#   port: 5567</span>
 </pre></div>
 </div>
 </div>

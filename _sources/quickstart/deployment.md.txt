@@ -34,7 +34,7 @@ def start(
     )
 ):
     """Start the microservice."""
-    launcher = EntrypointLauncher.from_config(file_path, external_modules=[sys.modules["src"]])
+    launcher = EntrypointLauncher.from_config(file_path, external_modules=[sys.modules["src.queries"]])
     launcher.launch()
 
 
