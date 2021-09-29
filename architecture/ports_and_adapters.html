@@ -43,7 +43,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="REST Handler" href="rest_handler.html" />
-    <link rel="prev" title="CQRS" href="cqrs.html" />
+    <link rel="prev" title="Messaging" href="messaging.html" />
     <link href="../_static/style.css" rel="stylesheet" type="text/css">
 
 </head>
@@ -96,7 +96,6 @@
 <li class="toctree-l1 current"><a class="reference internal" href="_toc.html">Architecture</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="data_model.html">Data Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="messaging.html">Messaging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cqrs.html">CQRS</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Ports and Adapters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rest_handler.html">REST Handler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="saga.html">SAGA</a></li>
@@ -176,12 +175,9 @@
             
   <div class="section" id="ports-and-adapters">
 <h1>Ports and Adapters<a class="headerlink" href="#ports-and-adapters" title="Permalink to this headline">¶</a></h1>
-<p>The ports and adapters architecture is a generalization of the traditional layers architecture meant to emphasize that,
-in modern systems, data sources might be requests initiators as well as receivers. Thus, it creates de <code class="docutils literal notranslate"><span class="pre">Port</span></code>
-abstraction, meaning any external system that meets a certain protocol. An <code class="docutils literal notranslate"><span class="pre">Adapter</span></code> is then a piece of software which
-takes that request and converts it into an actually useful structure, usable by the core of the application.</p>
-<p>Minos, aiming at building reactive microservices, follows a Ports and Adapters architecture in order to provide a way to
-easily extend the microservices’ functionality with new technologies.</p>
+<p>The ports and adapters architecture is a generalization of the traditional layers architecture meant to emphasize that, in modern systems, data sources might be requests initiators as well as receivers. Thus, it creates de <code class="docutils literal notranslate"><span class="pre">Port</span></code> abstraction, meaning any external system that meets a certain protocol. An <code class="docutils literal notranslate"><span class="pre">Adapter</span></code> is then a piece of software which takes that request and converts it into an actually useful structure, usable by the core of the application.</p>
+<p>Minos, aiming at building reactive microservices, follows a Ports and Adapters architecture in order to provide a way to easily extend the microservices’ functionality with new technologies.</p>
+<p>Adapters are by default abstracted through <code class="docutils literal notranslate"><span class="pre">Minos</span></code> <a class="reference external" href="decorators.md">decorators</a>. This way, the developer can concentrate on writing valuable code instead of dealing with technology specific things.</p>
 </div>
 
 
@@ -191,7 +187,7 @@ easily extend the microservices’ functionality with new technologies.</p>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="rest_handler.html" class="btn btn-neutral float-right" title="REST Handler" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="cqrs.html" class="btn btn-neutral float-left" title="CQRS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="messaging.html" class="btn btn-neutral float-left" title="Messaging" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
