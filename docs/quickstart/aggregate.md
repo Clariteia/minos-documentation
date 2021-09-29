@@ -8,7 +8,7 @@ The `minos` proposal is based on the *Domain Drive Design (DDD)* ideas, supporte
 
 ## Defining the `Exam` aggregate...
 
-As it is advanced at the beginning of the :doc:`/quickstart/_toc` guide, the study case will be to define an `exam` microservice. This one will be able to store all the needed information related with a common *exam* composed of questions with selectable answers. For sake of simplicity, all of them must be multiple answer questions, but it's a good practising exercise to continue working on these case and add another functionalities.
+As it is advanced at the beginning of the :doc:`/quickstart/_toc` guide, the study case will be to define an `exam` microservice. This one will be able to store all the needed information related with a common *exam* composed of questions with selectable answers. For the sake of simplicity, all of them must be multiple answer questions, but it's a good practising exercise to continue working on these case and add another functionalities.
 
 In this case, the `Exam` class will be the root-entity or `Aggregate` of the microservice, so that most of the operations sent to it will be related with the `Exam`. In `minos`, the way to do that is to inherit from the ``minos.common.Aggregate`` class, that is similar to `Python`'s [dataclasses](https://docs.python.org/3/library/dataclasses.html) in the sense that is able to build the class fields based on the typing. The currently supported types are all the simple `Python`'s types (`int`, `float`, `str`, ...) but also another advanced types are supported, like `list`, `dict`, `datetime`, etc. See the full documentation to obtain a detailed description.
 
