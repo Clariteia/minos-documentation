@@ -99,9 +99,9 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Exposing Information: Query Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#setting-up-the-environment">Setting up the environment!</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#configuring-query-classes">Configuring query classes…</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#handling-exam-events">Handling <code class="docutils literal notranslate"><span class="pre">Exam</span></code> events…</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#defining-exam-related-queries">Defining <code class="docutils literal notranslate"><span class="pre">Exam</span></code>-related queries…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-initializations-logic">Adding initializations logic…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#handling-events-and-updating-the-database">Handling events and updating the database…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#defining-queries-and-reading-the-database">Defining queries and reading the database…</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
 </li>
@@ -236,8 +236,8 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="configuring-query-classes">
-<h2>Configuring query classes…<a class="headerlink" href="#configuring-query-classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="adding-initializations-logic">
+<h2>Adding initializations logic…<a class="headerlink" href="#adding-initializations-logic" title="Permalink to this headline">¶</a></h2>
 <p>After being defined the <code class="docutils literal notranslate"><span class="pre">ExamQueryService</span></code> and <code class="docutils literal notranslate"><span class="pre">ExamQueryRepository</span></code> classes, the next step is to start writing the initialization code. The <code class="docutils literal notranslate"><span class="pre">ExamQueryService</span></code> is the easier one, as it only needs to store the repository instance given from the dependency injection (note that the <code class="docutils literal notranslate"><span class="pre">dependency_injector</span></code> package is being used here, so it must be added as a dependency: e.g. <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">add</span> <span class="pre">dependency-injector</span></code>):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dependency_injector.wiring</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Provide</span><span class="p">,</span>
@@ -280,8 +280,8 @@
 <p><strong>Important</strong>: For the sake of simplicity, here a <code class="docutils literal notranslate"><span class="pre">sqlite</span></code> database is being used, but in real environments another database systems are highly recommended.</p>
 <p>TODO</p>
 </div>
-<div class="section" id="handling-exam-events">
-<h2>Handling <code class="docutils literal notranslate"><span class="pre">Exam</span></code> events…<a class="headerlink" href="#handling-exam-events" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="handling-events-and-updating-the-database">
+<h2>Handling events and updating the database…<a class="headerlink" href="#handling-events-and-updating-the-database" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryService</span><span class="p">(</span><span class="n">QueryService</span><span class="p">):</span>
     <span class="o">...</span>
 
@@ -365,8 +365,8 @@
 </div>
 <p>TODO</p>
 </div>
-<div class="section" id="defining-exam-related-queries">
-<h2>Defining <code class="docutils literal notranslate"><span class="pre">Exam</span></code>-related queries…<a class="headerlink" href="#defining-exam-related-queries" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="defining-queries-and-reading-the-database">
+<h2>Defining queries and reading the database…<a class="headerlink" href="#defining-queries-and-reading-the-database" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryService</span><span class="p">(</span><span class="n">QueryService</span><span class="p">):</span>
     <span class="o">...</span>

@@ -61,7 +61,7 @@ class ExamQueryService(QueryService):
     ...
 ```
 
-## Configuring query classes...
+## Adding initializations logic...
 
 After being defined the `ExamQueryService` and `ExamQueryRepository` classes, the next step is to start writing the initialization code. The `ExamQueryService` is the easier one, as it only needs to store the repository instance given from the dependency injection (note that the `dependency_injector` package is being used here, so it must be added as a dependency: e.g. `poetry add dependency-injector`): 
 
@@ -111,7 +111,7 @@ class ExamQueryRepository(MinosSetup):
 
 TODO
 
-## Handling `Exam` events...
+## Handling events and updating the database...
 
 ```python
 class ExamQueryService(QueryService):
@@ -199,7 +199,7 @@ class ExamQueryRepository(MinosSetup):
 
 TODO
 
-## Defining `Exam`-related queries...
+## Defining queries and reading the database...
 
 TODO
 
