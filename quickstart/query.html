@@ -244,6 +244,7 @@
     <span class="n">inject</span><span class="p">,</span>
 <span class="p">)</span>
 
+
 <span class="k">class</span> <span class="nc">ExamQueryService</span><span class="p">(</span><span class="n">QueryService</span><span class="p">):</span>
 
     <span class="nd">@inject</span>
@@ -256,7 +257,10 @@
 </div>
 <p>The case of the <code class="docutils literal notranslate"><span class="pre">ExamQueryRepository</span></code> requires a bit more attention as it’s needed to setup the database connections and also provide the initialization logic composed of table creations, etc. Here a <code class="docutils literal notranslate"><span class="pre">sqlite3</span></code> database is chosen to store a simple <code class="docutils literal notranslate"><span class="pre">exams</span></code> table composed by three columns: <code class="docutils literal notranslate"><span class="pre">uuid</span></code>, <code class="docutils literal notranslate"><span class="pre">duration</span></code> and <code class="docutils literal notranslate"><span class="pre">subject</span></code>.</p>
 <p>An interesting detail here is the use of the <code class="docutils literal notranslate"><span class="pre">_setup</span></code> and <code class="docutils literal notranslate"><span class="pre">_destroy</span></code> methods to create and clean the database connection, and also create the database table. These methods are called by the <code class="docutils literal notranslate"><span class="pre">minos.common.DependencyInjector</span></code> before and after performing the injection itself.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryRepository</span><span class="p">(</span><span class="n">MinosSetup</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sqlite3</span>
+
+
+<span class="k">class</span> <span class="nc">ExamQueryRepository</span><span class="p">(</span><span class="n">MinosSetup</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exam.sqlite&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -278,10 +282,13 @@
 </pre></div>
 </div>
 <p><strong>Important</strong>: For the sake of simplicity, here a <code class="docutils literal notranslate"><span class="pre">sqlite</span></code> database is being used, but in real environments another database systems are highly recommended.</p>
-<p>TODO</p>
+<p>After being added the logic to create and destroy the <code class="docutils literal notranslate"><span class="pre">ExamQueryService</span></code> and <code class="docutils literal notranslate"><span class="pre">ExamQueryRepository</span></code>, everything is ready to start handling <code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> events and exposing queries to be used by another microservices and external clients.</p>
 </div>
 <div class="section" id="handling-events-and-updating-the-database">
 <h2>Handling events and updating the database…<a class="headerlink" href="#handling-events-and-updating-the-database" title="Permalink to this headline">¶</a></h2>
+<p>The way to handle events by the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> is mostly equal to the way to handle them by the <code class="docutils literal notranslate"><span class="pre">CommandService</span></code>, as it was described in <a class="reference internal" href="command.html"><span class="doc">Exposing Operations: Command Service</span></a> section. The main difference is that in the <code class="docutils literal notranslate"><span class="pre">CommandService</span></code> the expected behaviour is to perform an action that change some <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> instances (and generate a set of <code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> events) but here, in the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code>, the expected behaviour is to update the query database.</p>
+<p>The events to be handled in this case will be following: <code class="docutils literal notranslate"><span class="pre">ExamCreated</span></code>, <code class="docutils literal notranslate"><span class="pre">ExamUpdated.duration</span></code>, <code class="docutils literal notranslate"><span class="pre">ExamUpdated.subject</span></code>, <code class="docutils literal notranslate"><span class="pre">ExamDeleted</span></code>. Note that the update events has an ending qualifier that indicates to what field changes the event should refer. This is an interesting feature provided by the <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework that is very useful at some cases, especially when the event to be subscribed is related to an external aggregate and only a specific part of it is needed.</p>
+<p>So, the event handling methods will be similar to:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryService</span><span class="p">(</span><span class="n">QueryService</span><span class="p">):</span>
     <span class="o">...</span>
 
@@ -330,7 +337,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>TODO</p>
+<p>After being subscribed to some events, let’s add the repository methods to store the information contained into them on the database. One interesting detail here is that the repository has the responsibility to parse the given parameters into a format that can be stored on the specific database system. This is a good strategy that simplifies the process to migrate to another database system that may support more advanced types.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryRepository</span><span class="p">(</span><span class="n">MinosSetup</span><span class="p">):</span>
 
     <span class="o">...</span>
@@ -363,7 +370,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>TODO</p>
+<p>So, after being defined the event handling in the <code class="docutils literal notranslate"><span class="pre">ExamQueryService</span></code> and the logic to store the events’ information into the database in the <code class="docutils literal notranslate"><span class="pre">ExamQueryRepository</span></code>, the final step is to start writing the queries to be exposed externally.</p>
 </div>
 <div class="section" id="defining-queries-and-reading-the-database">
 <h2>Defining queries and reading the database…<a class="headerlink" href="#defining-queries-and-reading-the-database" title="Permalink to this headline">¶</a></h2>

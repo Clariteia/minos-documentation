@@ -275,6 +275,28 @@
 <div class="section" id="docker">
 <h2>Docker<a class="headerlink" href="#docker" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
+<div class="highlight-dockerfile notranslate"><div class="highlight"><pre><span></span><span class="c"># Dockerfile</span>
+
+<span class="k">FROM</span> <span class="s">ghcr.io/clariteia/minos:0.1.4</span> <span class="k">as</span> <span class="s">development</span>
+
+<span class="k">COPY</span> ./pyproject.toml ./poetry.lock ./
+<span class="k">RUN</span> poetry install --no-root
+<span class="k">COPY</span> . .
+<span class="k">CMD</span> <span class="p">[</span><span class="s2">&quot;poetry&quot;</span><span class="p">,</span> <span class="s2">&quot;run&quot;</span><span class="p">,</span> <span class="s2">&quot;microservice&quot;</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">]</span>
+
+<span class="k">FROM</span> <span class="s">development</span> <span class="k">as</span> <span class="s">build</span>
+<span class="k">RUN</span> poetry <span class="nb">export</span> --without-hashes &gt; req.txt <span class="o">&amp;&amp;</span> pip wheel -r req.txt --wheel-dir ./dist
+<span class="k">RUN</span> poetry build --format wheel
+
+<span class="k">FROM</span> <span class="s">python:slim</span> <span class="k">as</span> <span class="s">production</span>
+<span class="k">COPY</span> --from<span class="o">=</span>build /microservice/dist/ ./dist
+<span class="k">RUN</span> pip install --no-deps ./dist/*
+<span class="k">COPY</span> ./config.yml ./config.yml
+<span class="k">ENTRYPOINT</span> <span class="p">[</span><span class="s2">&quot;microservice&quot;</span><span class="p">]</span>
+<span class="k">CMD</span> <span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>TODO</p>
 </div>
 <div class="section" id="kubernetes">
 <h2>Kubernetes<a class="headerlink" href="#kubernetes" title="Permalink to this headline">¶</a></h2>

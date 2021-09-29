@@ -71,6 +71,7 @@ from dependency_injector.wiring import (
     inject,
 )
 
+
 class ExamQueryService(QueryService):
     
     @inject
@@ -86,6 +87,9 @@ The case of the `ExamQueryRepository` requires a bit more attention as it's need
 An interesting detail here is the use of the `_setup` and `_destroy` methods to create and clean the database connection, and also create the database table. These methods are called by the `minos.common.DependencyInjector` before and after performing the injection itself.
 
 ```python
+import sqlite3
+
+
 class ExamQueryRepository(MinosSetup):
     
     def __init__(self, database: str = "exam.sqlite", *args, **kwargs):
@@ -109,9 +113,15 @@ class ExamQueryRepository(MinosSetup):
 
 **Important**: For the sake of simplicity, here a `sqlite` database is being used, but in real environments another database systems are highly recommended.
 
-TODO
+After being added the logic to create and destroy the `ExamQueryService` and `ExamQueryRepository`, everything is ready to start handling `AggregateDiff` events and exposing queries to be used by another microservices and external clients.
 
 ## Handling events and updating the database...
+
+The way to handle events by the `QueryService` is mostly equal to the way to handle them by the `CommandService`, as it was described in :doc:`/quickstart/command` section. The main difference is that in the `CommandService` the expected behaviour is to perform an action that change some `Aggregate` instances (and generate a set of `AggregateDiff` events) but here, in the `QueryService`, the expected behaviour is to update the query database. 
+
+The events to be handled in this case will be following: `ExamCreated`, `ExamUpdated.duration`, `ExamUpdated.subject`, `ExamDeleted`. Note that the update events has an ending qualifier that indicates to what field changes the event should refer. This is an interesting feature provided by the `minos` framework that is very useful at some cases, especially when the event to be subscribed is related to an external aggregate and only a specific part of it is needed.
+
+So, the event handling methods will be similar to:
 
 ```python
 class ExamQueryService(QueryService):
@@ -162,7 +172,7 @@ class ExamQueryService(QueryService):
         self.repository.delete(uuid)
 ```
 
-TODO
+After being subscribed to some events, let's add the repository methods to store the information contained into them on the database. One interesting detail here is that the repository has the responsibility to parse the given parameters into a format that can be stored on the specific database system. This is a good strategy that simplifies the process to migrate to another database system that may support more advanced types.
 
 ```python
 class ExamQueryRepository(MinosSetup):
@@ -197,7 +207,7 @@ class ExamQueryRepository(MinosSetup):
         self.connection.commit()
 ```
 
-TODO
+So, after being defined the event handling in the `ExamQueryService` and the logic to store the events' information into the database in the `ExamQueryRepository`, the final step is to start writing the queries to be exposed externally.
 
 ## Defining queries and reading the database...
 
