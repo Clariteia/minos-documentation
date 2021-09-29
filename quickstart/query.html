@@ -99,6 +99,7 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Exposing Information: Query Service</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#setting-up-the-environment">Setting up the environment!</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuring-query-classes">Configuring query classes…</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#handling-exam-events">Handling <code class="docutils literal notranslate"><span class="pre">Exam</span></code> events…</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#defining-exam-related-queries">Defining <code class="docutils literal notranslate"><span class="pre">Exam</span></code>-related queries…</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
@@ -184,11 +185,14 @@
 <h1>Exposing Information: Query Service<a class="headerlink" href="#exposing-information-query-service" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>After being described how to define the aggregate in the <a class="reference internal" href="aggregate.html"><span class="doc">Modeling the Domain: Aggregates</span></a> section and being exposed some operations that change its state in the <a class="reference internal" href="command.html"><span class="doc">Exposing Operations: Command Service</span></a> section, so the next step is to describe how to expose queries. As said in previous sections, the <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework implements the <a class="reference external" href="https://martinfowler.com/bliki/CQRS.html">CQRS</a> pattern, in which the <em>Query Model</em> is decoupled from the <em>Command Model</em>, allowing to orient each one to its specific purpose and together giving the most of themselves.</p>
+<p>So, the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> can be seen as an independent component with respect to the rest of the microservice, allowing to externalize it without big effort. So, it should use a dedicated database, different from the one that stores the <code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> events, the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> snapshots and so on. Then, at this point the main question is how to populate the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> database without using another components of the microservice nor accessing the main database. Here, the answer is through event subscription, that provides a decoupled way to stay informed about any change produced over the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code>s defined both on the target microservice and in external ones.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> workflow can be seen as a set of writing operations that updates the database, that are launched when specific <code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> events are published, and a set of read operations that queries the database, that are launched when another microservices or external clients perform query operations.</p>
+<p>One important thing to notice at this point is the consistency degree of the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> respect to the <code class="docutils literal notranslate"><span class="pre">Aggregate</span></code> state and their stored events: As the way to update the query database is based on event subscription, which generates a certain amount of delay between the publication of the event and the reception, a strong consistency cannot be guaranteed. Alternatively, eventual consistency is the offered guarantee, that means that the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> is consistent respect to the received <code class="docutils literal notranslate"><span class="pre">AggregateDiff</span></code> events.</p>
 </div>
 <div class="section" id="setting-up-the-environment">
 <h2>Setting up the environment!<a class="headerlink" href="#setting-up-the-environment" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>After being described the basic concepts about how the <code class="docutils literal notranslate"><span class="pre">QueryService</span></code> works, the next step is start setting up the one for the <code class="docutils literal notranslate"><span class="pre">exam</span></code> microservice. The first part is to add the configuration parameters into the <code class="docutils literal notranslate"><span class="pre">config.yml</span></code> file (note that the ones related with interfaces are shared with the <code class="docutils literal notranslate"><span class="pre">CommandService</span></code>):</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># config.yml</span>
 <span class="nt">service</span><span class="p">:</span>
   <span class="nt">injections</span><span class="p">:</span>
@@ -212,6 +216,9 @@
 <span class="nn">...</span>
 </pre></div>
 </div>
+<p>After being updated the configuration file, the next step is to create the structure of the query service, which will be defined into <code class="docutils literal notranslate"><span class="pre">src/queries.py</span></code>. To keep the code organized, the chosen pattern in this case is to split all the logic into two parts: One related with input and output parsing, performed by the <code class="docutils literal notranslate"><span class="pre">ExamQueryService</span></code>, and a second one related with database manipulation, performed by the <code class="docutils literal notranslate"><span class="pre">ExamQueryRepository</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ExamQueryService</span></code> inherits the <code class="docutils literal notranslate"><span class="pre">minos.cqrs.QueryService</span></code> that is a must condition to implement a query service, and the <code class="docutils literal notranslate"><span class="pre">ExamQueryRepository</span></code> inherits from the <code class="docutils literal notranslate"><span class="pre">minos.common.MinosSetup</span></code> class, who provides some interesting utility methods, like the <code class="docutils literal notranslate"><span class="pre">setup</span></code>, and <code class="docutils literal notranslate"><span class="pre">destroy</span></code>, really useful for creating and destroying database connections together with the repository instance. Another important detail is that the <code class="docutils literal notranslate"><span class="pre">ExamQueryRepository</span></code> will be injected as a dependency injection (as it is defined in the configuration file).</p>
+<p>So, the <code class="docutils literal notranslate"><span class="pre">src/queries.py</span></code> file skeleton will be similar to:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">minos.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">MinosSetup</span><span class="p">,</span>
 <span class="p">)</span>
@@ -228,8 +235,16 @@
     <span class="o">...</span>
 </pre></div>
 </div>
-<p>TODO</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryService</span><span class="p">(</span><span class="n">QueryService</span><span class="p">):</span>
+</div>
+<div class="section" id="configuring-query-classes">
+<h2>Configuring query classes…<a class="headerlink" href="#configuring-query-classes" title="Permalink to this headline">¶</a></h2>
+<p>After being defined the <code class="docutils literal notranslate"><span class="pre">ExamQueryService</span></code> and <code class="docutils literal notranslate"><span class="pre">ExamQueryRepository</span></code> classes, the next step is to start writing the initialization code. The <code class="docutils literal notranslate"><span class="pre">ExamQueryService</span></code> is the easier one, as it only needs to store the repository instance given from the dependency injection (note that the <code class="docutils literal notranslate"><span class="pre">dependency_injector</span></code> package is being used here, so it must be added as a dependency: e.g. <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">add</span> <span class="pre">dependency-injector</span></code>):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dependency_injector.wiring</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Provide</span><span class="p">,</span>
+    <span class="n">inject</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">ExamQueryService</span><span class="p">(</span><span class="n">QueryService</span><span class="p">):</span>
 
     <span class="nd">@inject</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repository</span><span class="p">:</span> <span class="n">ExamQueryRepository</span> <span class="o">=</span> <span class="n">Provide</span><span class="p">[</span><span class="s2">&quot;query_repository&quot;</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -239,7 +254,8 @@
     <span class="o">...</span>
 </pre></div>
 </div>
-<p>TODO</p>
+<p>The case of the <code class="docutils literal notranslate"><span class="pre">ExamQueryRepository</span></code> requires a bit more attention as it’s needed to setup the database connections and also provide the initialization logic composed of table creations, etc. Here a <code class="docutils literal notranslate"><span class="pre">sqlite3</span></code> database is chosen to store a simple <code class="docutils literal notranslate"><span class="pre">exams</span></code> table composed by three columns: <code class="docutils literal notranslate"><span class="pre">uuid</span></code>, <code class="docutils literal notranslate"><span class="pre">duration</span></code> and <code class="docutils literal notranslate"><span class="pre">subject</span></code>.</p>
+<p>An interesting detail here is the use of the <code class="docutils literal notranslate"><span class="pre">_setup</span></code> and <code class="docutils literal notranslate"><span class="pre">_destroy</span></code> methods to create and clean the database connection, and also create the database table. These methods are called by the <code class="docutils literal notranslate"><span class="pre">minos.common.DependencyInjector</span></code> before and after performing the injection itself.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryRepository</span><span class="p">(</span><span class="n">MinosSetup</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exam.sqlite&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -261,6 +277,7 @@
     <span class="o">...</span>
 </pre></div>
 </div>
+<p><strong>Important</strong>: For the sake of simplicity, here a <code class="docutils literal notranslate"><span class="pre">sqlite</span></code> database is being used, but in real environments another database systems are highly recommended.</p>
 <p>TODO</p>
 </div>
 <div class="section" id="handling-exam-events">
@@ -271,22 +288,46 @@
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;ExamCreated&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_created</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">(</span><span class="n">resolve_references</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">),</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">uuid</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">subject</span> <span class="o">=</span> <span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">),</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ResponseException</span><span class="p">(</span><span class="s2">&quot;Some fields could not be extracted.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">subject</span><span class="p">)</span>
 
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;ExamUpdated.duration&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_duration_updated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">update_duration</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">uuid</span><span class="p">,</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ResponseException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Some fields could not be extracted: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">update_duration</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
 
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;ExamUpdated.subject&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_subject_updated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">(</span><span class="n">resolve_references</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">update_subject</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">uuid</span><span class="p">,</span> <span class="n">subject</span> <span class="o">=</span> <span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ResponseException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Some fields could not be extracted: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">update_subject</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">subject</span><span class="p">)</span>
 
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;ExamDeleted&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_deleted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">uuid</span> <span class="o">=</span> <span class="n">diff</span><span class="o">.</span><span class="n">uuid</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ResponseException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Some fields could not be extracted: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>TODO</p>
@@ -406,6 +447,7 @@
 <span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Request</span><span class="p">,</span>
     <span class="n">Response</span><span class="p">,</span>
+    <span class="n">ResponseException</span><span class="p">,</span>
     <span class="n">enroute</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -503,24 +545,48 @@
         <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;ExamCreated&quot;</span><span class="p">)</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_created</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">(</span><span class="n">resolve_references</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">),</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">uuid</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">subject</span> <span class="o">=</span> <span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">),</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ResponseException</span><span class="p">(</span><span class="s2">&quot;Some fields could not be extracted.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">subject</span><span class="p">)</span>
 
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;ExamUpdated.duration&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_duration_updated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">update_duration</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">uuid</span><span class="p">,</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ResponseException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Some fields could not be extracted: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">update_duration</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
 
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;ExamUpdated.subject&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_subject_updated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">(</span><span class="n">resolve_references</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">update_subject</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">uuid</span><span class="p">,</span> <span class="n">subject</span> <span class="o">=</span> <span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ResponseException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Some fields could not be extracted: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">update_subject</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">subject</span><span class="p">)</span>
 
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="s2">&quot;ExamDeleted&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">exam_deleted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">uuid</span> <span class="o">=</span> <span class="n">diff</span><span class="o">.</span><span class="n">uuid</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ResponseException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Some fields could not be extracted: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
