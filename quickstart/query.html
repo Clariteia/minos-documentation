@@ -337,6 +337,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>[TODO: explain how references resolving works.]</p>
 <p>After being subscribed to some events, let’s add the repository methods to store the information contained into them on the database. One interesting detail here is that the repository has the responsibility to parse the given parameters into a format that can be stored on the specific database system. This is a good strategy that simplifies the process to migrate to another database system that may support more advanced types.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryRepository</span><span class="p">(</span><span class="n">MinosSetup</span><span class="p">):</span>
 
@@ -374,7 +375,9 @@
 </div>
 <div class="section" id="defining-queries-and-reading-the-database">
 <h2>Defining queries and reading the database…<a class="headerlink" href="#defining-queries-and-reading-the-database" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>The last and more interesting part of the <em>Query Service</em> definition is the query building process as it’s the tangible result of the implementation from an external perspective. In summary, is what another microservices an external clients will use. One important thing to notice is that the query database should be oriented as much as possible on being highly efficient on these operations. It’s true that faster event handling is better for the microservice performance, but that won’t as much impact on the user experience as the query handling. For this reason, when tradeoffs raise while building <em>Query Services</em>, the priority should be oriented into faster query handling over event handling.</p>
+<p>For the sake of simplicity, the <code class="docutils literal notranslate"><span class="pre">ExamQueryService</span></code> will include two query examples: the first one will retrieve a list of exam identifiers sorted by the max duration and limited by a given count, the second query will retrieve the list of subject identifiers sorted by the exams count and limited by a given count.</p>
+<p>As in the case of the event handling methods, the responsibility of the query handling method is to parse the given <code class="docutils literal notranslate"><span class="pre">Request</span></code>, prepare the parameters to the <code class="docutils literal notranslate"><span class="pre">ExamQueryRepository</span></code> and build the returned <code class="docutils literal notranslate"><span class="pre">Response</span></code>. So the code should be similar to:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryService</span><span class="p">(</span><span class="n">QueryService</span><span class="p">):</span>
     <span class="o">...</span>
 
@@ -382,30 +385,42 @@
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;GetExamsWithMoreDuration&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">exams_with_more_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
         <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">get_longest_exams</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">])</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="mi">100</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">get_longest_exams</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;/exams/q/subjects-with-more-exams&quot;</span><span class="p">,</span> <span class="s2">&quot;GET&quot;</span><span class="p">)</span>
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;GetSubjectsWithMoreExams&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">subjects_with_more_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
         <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">get_subjects_with_more_exams</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">])</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="mi">100</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">get_subjects_with_more_exams</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
     <span class="o">...</span>
 </pre></div>
 </div>
-<p>TODO</p>
+<p>Before start defining the <code class="docutils literal notranslate"><span class="pre">ExamQueryRepository</span></code> methods, it’s important to give a brief explanation about an interesting <code class="docutils literal notranslate"><span class="pre">minos</span></code> feature, that is the <code class="docutils literal notranslate"><span class="pre">ModelType</span></code> class. This <code class="docutils literal notranslate"><span class="pre">type</span></code> class can be seen as a <code class="docutils literal notranslate"><span class="pre">namedtuple</span></code> with typing and serialization superpowers among other interesting features. In this case, it’s used to define the structure of the response objects naming them as <code class="docutils literal notranslate"><span class="pre">ExamDurationDTO</span></code> and <code class="docutils literal notranslate"><span class="pre">SubjectExamsDTO</span></code> (appending the trailing <code class="docutils literal notranslate"><span class="pre">DTO</span></code> suffix is a common naming convention for these cases and states for <em>Data Transfer Object</em>):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ExamDurationDTO</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;ExamDurationDTO&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;exam&quot;</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">})</span>
 <span class="n">SubjectExamsDTO</span> <span class="o">=</span> <span class="n">ModelType</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;SubjectExamsDTO&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="n">UUID</span><span class="p">,</span> <span class="s2">&quot;exams&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">})</span>
 </pre></div>
 </div>
-<p>TODO</p>
+<p>After being introduced the <code class="docutils literal notranslate"><span class="pre">ModelType</span></code> class, the final step is to define the <code class="docutils literal notranslate"><span class="pre">ExamQueryRepository</span></code> methods to be used by the query handling ones. Here, both the <code class="docutils literal notranslate"><span class="pre">get_longest_exams</span></code> and <code class="docutils literal notranslate"><span class="pre">get_subjects_with_more_exams</span></code> performs a database query and return the parsed values as lists of instances using the corresponding <code class="docutils literal notranslate"><span class="pre">ModelType</span></code>s. The methods should be similar to:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ExamQueryRepository</span><span class="p">(</span><span class="n">MinosSetup</span><span class="p">):</span>
 
     <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">get_longest_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">ExamDurationDTO</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_longest_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">ExamDurationDTO</span><span class="p">]:</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="p">)</span>
         <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
         <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT uuid, duration FROM exams ORDER BY duration DESC LIMIT ?&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
@@ -414,7 +429,7 @@
 
         <span class="k">return</span> <span class="p">[</span><span class="n">ExamDurationDTO</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">get_subjects_with_more_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubjectExamsDTO</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_subjects_with_more_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubjectExamsDTO</span><span class="p">]:</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="p">)</span>
         <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
         <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
@@ -430,7 +445,7 @@
 </div>
 <div class="section" id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>After being described step by step the main features of the <code class="docutils literal notranslate"><span class="pre">minos.cqrs.QueryService</span></code> class and the need to have an auxiliary <em>Query Repository</em> class to keep a consistent separation between the request parsing and the database manipulation, here is a full snapshot of the resulting <code class="docutils literal notranslate"><span class="pre">src/queries.py</span></code> file:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/queries.py&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">sqlite3</span>
@@ -481,7 +496,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">get_longest_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">ExamDurationDTO</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_longest_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">ExamDurationDTO</span><span class="p">]:</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="p">)</span>
         <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
         <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT uuid, duration FROM exams ORDER BY duration DESC LIMIT ?&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
@@ -490,7 +505,7 @@
 
         <span class="k">return</span> <span class="p">[</span><span class="n">ExamDurationDTO</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">get_subjects_with_more_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubjectExamsDTO</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_subjects_with_more_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubjectExamsDTO</span><span class="p">]:</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="p">)</span>
         <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
         <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
@@ -539,7 +554,12 @@
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;GetExamsWithMoreDuration&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">exams_with_more_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
         <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
-        <span class="n">limit</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="mi">100</span>
+
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">get_longest_exams</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
@@ -547,7 +567,12 @@
     <span class="nd">@enroute</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;GetSubjectsWithMoreExams&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">subjects_with_more_exams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
         <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
-        <span class="n">limit</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="mi">100</span>
+
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">get_subjects_with_more_exams</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
