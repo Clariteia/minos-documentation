@@ -172,6 +172,8 @@ class ExamQueryService(QueryService):
         self.repository.delete(uuid)
 ```
 
+[TODO: explain how references resolving works.]
+
 After being subscribed to some events, let's add the repository methods to store the information contained into them on the database. One interesting detail here is that the repository has the responsibility to parse the given parameters into a format that can be stored on the specific database system. This is a good strategy that simplifies the process to migrate to another database system that may support more advanced types.
 
 ```python
@@ -211,7 +213,11 @@ So, after being defined the event handling in the `ExamQueryService` and the log
 
 ## Defining queries and reading the database...
 
-TODO
+The last and more interesting part of the *Query Service* definition is the query building process as it's the tangible result of the implementation from an external perspective. In summary, is what another microservices an external clients will use. One important thing to notice is that the query database should be oriented as much as possible on being highly efficient on these operations. It's true that faster event handling is better for the microservice performance, but that won't as much impact on the user experience as the query handling. For this reason, when tradeoffs raise while building *Query Services*, the priority should be oriented into faster query handling over event handling.
+
+For the sake of simplicity, the `ExamQueryService` will include two query examples: the first one will retrieve a list of exam identifiers sorted by the max duration and limited by a given count, the second query will retrieve the list of subject identifiers sorted by the exams count and limited by a given count.
+
+As in the case of the event handling methods, the responsibility of the query handling method is to parse the given `Request`, prepare the parameters to the `ExamQueryRepository` and build the returned `Response`. So the code should be similar to:
 
 ```python
 class ExamQueryService(QueryService):
@@ -221,34 +227,46 @@ class ExamQueryService(QueryService):
     @enroute.broker.query("GetExamsWithMoreDuration")
     async def exams_with_more_duration(self, request: Request) -> Response:
         content = await request.content()
-        result = self.repository.get_longest_exams(content["limit"])
+        
+        try:
+            limit = content["limit"]
+        except KeyError:
+            limit = 100
+            
+        result = self.repository.get_longest_exams(limit)
         return Response(result)
 
     @enroute.rest.query("/exams/q/subjects-with-more-exams", "GET")
     @enroute.broker.query("GetSubjectsWithMoreExams")
     async def subjects_with_more_exams(self, request: Request) -> Response:
         content = await request.content()
-        result = self.repository.get_subjects_with_more_exams(content["limit"])
+        
+        try:
+            limit = content["limit"]
+        except KeyError:
+            limit = 100
+            
+        result = self.repository.get_subjects_with_more_exams(limit)
         return Response(result)
 
     ...
 ```
 
-TODO
+Before start defining the `ExamQueryRepository` methods, it's important to give a brief explanation about an interesting `minos` feature, that is the `ModelType` class. This `type` class can be seen as a `namedtuple` with typing and serialization superpowers among other interesting features. In this case, it's used to define the structure of the response objects naming them as `ExamDurationDTO` and `SubjectExamsDTO` (appending the trailing `DTO` suffix is a common naming convention for these cases and states for *Data Transfer Object*):
 
 ```python
 ExamDurationDTO = ModelType.build("ExamDurationDTO", {"exam": UUID, "duration": timedelta})
 SubjectExamsDTO = ModelType.build("SubjectExamsDTO", {"subject": UUID, "exams": int})
 ```
 
-TODO
+After being introduced the `ModelType` class, the final step is to define the `ExamQueryRepository` methods to be used by the query handling ones. Here, both the `get_longest_exams` and `get_subjects_with_more_exams` performs a database query and return the parsed values as lists of instances using the corresponding `ModelType`s. The methods should be similar to:
 
 ```python
 class ExamQueryRepository(MinosSetup):
     
     ...
             
-    def get_longest_exams(self, limit: int = 100) -> list[ExamDurationDTO]:
+    def get_longest_exams(self, limit: int) -> list[ExamDurationDTO]:
         params = (limit, )
         cursor = self.connection.cursor()
         cursor.execute("SELECT uuid, duration FROM exams ORDER BY duration DESC LIMIT ?", params)
@@ -257,7 +275,7 @@ class ExamQueryRepository(MinosSetup):
             
         return [ExamDurationDTO(*row) for row in rows]
             
-    def get_subjects_with_more_exams(self, limit: int = 100) -> list[SubjectExamsDTO]:
+    def get_subjects_with_more_exams(self, limit: int) -> list[SubjectExamsDTO]:
         params = (limit, )
         cursor = self.connection.cursor()
         cursor.execute(
@@ -272,7 +290,7 @@ class ExamQueryRepository(MinosSetup):
 
 ## Summary
 
-TODO
+After being described step by step the main features of the `minos.cqrs.QueryService` class and the need to have an auxiliary *Query Repository* class to keep a consistent separation between the request parsing and the database manipulation, here is a full snapshot of the resulting `src/queries.py` file:
 
 ```python
 """src/queries.py"""
@@ -325,7 +343,7 @@ class ExamQueryRepository(MinosSetup):
             self.connection.close()
             self.connection = None
             
-    def get_longest_exams(self, limit: int = 100) -> list[ExamDurationDTO]:
+    def get_longest_exams(self, limit: int) -> list[ExamDurationDTO]:
         params = (limit, )
         cursor = self.connection.cursor()
         cursor.execute("SELECT uuid, duration FROM exams ORDER BY duration DESC LIMIT ?", params)
@@ -334,7 +352,7 @@ class ExamQueryRepository(MinosSetup):
             
         return [ExamDurationDTO(*row) for row in rows]
             
-    def get_subjects_with_more_exams(self, limit: int = 100) -> list[SubjectExamsDTO]:
+    def get_subjects_with_more_exams(self, limit: int) -> list[SubjectExamsDTO]:
         params = (limit, )
         cursor = self.connection.cursor()
         cursor.execute(
@@ -383,7 +401,12 @@ class ExamQueryService(QueryService):
     @enroute.broker.query("GetExamsWithMoreDuration")
     async def exams_with_more_duration(self, request: Request) -> Response:
         content = await request.content()
-        limit = content["limit"]
+        
+        try:
+            limit = content["limit"]
+        except KeyError:
+            limit = 100
+            
         result = self.repository.get_longest_exams(limit)
         return Response(result)
 
@@ -391,7 +414,12 @@ class ExamQueryService(QueryService):
     @enroute.broker.query("GetSubjectsWithMoreExams")
     async def subjects_with_more_exams(self, request: Request) -> Response:
         content = await request.content()
-        limit = content["limit"]
+        
+        try:
+            limit = content["limit"]
+        except KeyError:
+            limit = 100
+            
         result = self.repository.get_subjects_with_more_exams(limit)
         return Response(result)
 
