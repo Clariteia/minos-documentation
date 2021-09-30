@@ -2,17 +2,17 @@
 
 ## Introduction
 
-In opposite to monolithic systems who use relational database model to represent and store the business logic, microservice-based systems requires applying slightly different techniques. One of the main reasons to start thinking different is based on the splitting of a single but big information schema into multiple smaller ones, as each microservice has its own dedicated database. 
+In contrast to monolithic systems that use relational models to represent and store the business logic, microservice-based systems requires applying slightly different techniques. One of the main reasons to start thinking differently is based on the splitting of a single but big information schema into multiple smaller ones, as each microservice has its own dedicated database. 
 
-The `minos` proposal is based on the *Domain Drive Design (DDD)* ideas, supported by *Entities*, *Value-Objects* and an *Aggregate* (or *Root Entity*) that represents the main concept of the microservice. These set of concepts allows us to model information at microservice level, but at some cases it's needed to relate information from one microservice with information from another one. The way to do that in `minos` is over *Aggregate References*. To understand these concepts in more detail, the :doc:`/architecture/data_model` section provides a more detailed explanation about them.
+The `minos` proposal is based on  *Domain Drive Design's (DDD)* ideas, supported by *Entities*, *Value-Objects* and an *Aggregate* (or *Root Entity*) that represents the main concept of the microservice. These set of concepts allows us to model information at microservice level, but at some cases it is needed to relate information from one microservice with information from another one. The way to do that in `minos` is over *Aggregate References*. To understand these concepts in more detail, the :doc:`/architecture/data_model` section provides a more detailed explanation about them.
 
 ## Defining the `Exam` aggregate...
 
-As it is advanced at the beginning of the :doc:`/quickstart/_toc` guide, the study case will be to define an `exam` microservice. This one will be able to store all the needed information related with a common *exam* composed of questions with selectable answers. For the sake of simplicity, all of them must be multiple answer questions, but it's a good practising exercise to continue working on these case and add another functionalities.
+As it is advanced at the beginning of the :doc:`/quickstart/_toc` guide, the study case will be to define an `exam` microservice. This one will be able to store all the needed information related with a common *exam* composed of questions with selectable answers. For the sake of simplicity, all of them must be multiple answer questions, but it is a good practising exercise to continue working on these case and add another functionalities.
 
 In this case, the `Exam` class will be the root-entity or `Aggregate` of the microservice, so that most of the operations sent to it will be related with the `Exam`. In `minos`, the way to do that is to inherit from the ``minos.common.Aggregate`` class, that is similar to `Python`'s [dataclasses](https://docs.python.org/3/library/dataclasses.html) in the sense that is able to build the class fields based on the typing. The currently supported types are all the simple `Python`'s types (`int`, `float`, `str`, ...) but also another advanced types are supported, like `list`, `dict`, `datetime`, etc. See the full documentation to obtain a detailed description.
 
-With this simple functionality, it's already possible to start building the `Exam` structure, or at least defining the fields based on simpler types, as it can be seen here: 
+With this simple functionality, it is already possible to start building the `Exam` structure, or at least defining the fields based on simpler types, as it can be seen here: 
 
 ```python
 from datetime import (
@@ -36,7 +36,7 @@ Then, an exam instance could be created as follows:
 Exam("Mid-term", timedelta(hours=1, minutes=30))
 ```
 
-One important thing to notice is that the `Aggregate` class also provides another additional fields related both with the identification and versioning that must not be provided by the developer (they are computed internally). The concrete fields are the following:
+One important thing to notice is that the `Aggregate` class also provides another additional fields related to both with the identification and versioning that must not be provided by the developer (they are computed internally). The concrete fields are the following:
 * `uuid: UUID` Unique identifier of the instance.
 * `version: int` Version of the instance, computed as an auto-incremental integer starting from `1` during the creation process.
 * `created_at: datetime` Creation timestamp of the instance.
@@ -46,7 +46,7 @@ But the real potential of the `Aggregate` class starts being visible when storag
 
 ### Storage Operations
 
-Before starting to describe the available *CRUD* operations provided by the `Aggregate` class, it's important to notice one important part of the `minos` framework and how those operations are implemented. The nature of the framework is highly inspired by *Event Sourcing* thoughts, so that the aggregate is not simply stored on a collection that is being updated progressively without taking history into account, but the aggregate is stored as a sequence of incremental modifications known as `AggregateDiff` entries that acts as *Domain Events*. 
+Before starting to describe the available *CRUD* operations provided by the `Aggregate` class, it is important to notice one important part of the `minos` framework and how those operations are implemented. The nature of the framework is highly inspired by *Event Sourcing* thoughts, so that the aggregate is not simply stored on a collection that is being updated progressively without taking history into account, but the aggregate is stored as a sequence of incremental modifications known as `AggregateDiff` entries that acts as *Domain Events*. 
 
 This set of events are stored on a *Repository* who is defined by the `minos.common.MinosRepository` interface, but also are exposed to another microservices over a *Broker*, who is defined by the `minos.common.MinosBroker` interface. The event based strategy has an important caveat, that is how to access the full aggregate as most business logic operations will probably require working with a full `Exam` instance (not only with the sequence of `AggregateDiff` instances). As the reconstruction each time a full instance is needed is a really inefficient operation, `minos` holds on a *Snapshot* who is defined by the `minos.common.MinosSnapshot` interface and provided direct access to the reconstructed instances. To know more about how *Event Sourcing* is implemented in `minos`, the [TODO: link to architecture] sections provides a detailed description.
 
@@ -74,7 +74,7 @@ snapshot:
 ...
 ```
 
-After being introduced how aggregate persistence is implemented in `minos`, the next sections provide a reference guide about how to use the storage operations step by step. One important thing to notice is that all of them are implemented using *awaitables*, so it's needed to know the [asyncio](https://docs.python.org/3/library/asyncio.html) basis to get the most of them. 
+After being introduced how aggregate persistence is implemented in `minos`, the next sections provide a reference guide about how to use the storage operations step by step. One important thing to notice is that all of them are implemented using *awaitables*, so it is needed to know the [asyncio](https://docs.python.org/3/library/asyncio.html) basis to get the most of them. 
 
 #### Create
 
@@ -171,7 +171,7 @@ AggregateDiff(
 ```
 
 
-Additionally, the `Aggregate` class provides a `save()` method that automatically *creates* or *updates* the instance depending on if it's a new one or an already exising. Here is an example:
+Additionally, the `Aggregate` class provides a `save()` method that automatically *creates* or *updates* the instance depending on if it is a new one or an already exising. Here is an example:
 
 ```python
 exam = Exam("Mid-term", timedelta(hours=1))
@@ -183,7 +183,7 @@ await exam.save()
 
 #### Delete
 
-After being explained who to create and update instances, the remaining operation is the deletion one. In the `minos` framework it's implemented with a `delete` method, that internally stores a *deletion event* in to the *Repository* so that the persistence is guaranteed. Then, the *Broker* will publish the *update event* on the `{$AGGREGATE_NAME}Deleted` topic.
+After being explained who to create and update instances, the remaining operation is the deletion one. In the `minos` framework it is implemented with a `delete` method, that internally stores a *deletion event* in to the *Repository* so that the persistence is guaranteed. Then, the *Broker* will publish the *update event* on the `{$AGGREGATE_NAME}Deleted` topic.
 
 For example, deleting an instance can be done with:
 ```python
@@ -203,7 +203,7 @@ AggregateDiff(
 )
 ```
 
-One important thing to notice is that the `create`, `update` and `delete` operations are writing operations, so all of them generates some kind of event to be stored internally and notified to others so that these operations requires to use the *Repository* and *Broker* components. However, the following operations (`get` and `find`) are reading operations, so the execution of them does not generate any events. Also, as it will be explained later, these operations are related with `Aggregate` instances, so it's needed to use the *Snapshot* component, whose purpose is to provide a simple and efficient way to access them.
+One important thing to notice is that the `create`, `update` and `delete` operations are writing operations, so all of them generates some kind of event to be stored internally and notified to others so that these operations requires to use the *Repository* and *Broker* components. However, the following operations (`get` and `find`) are reading operations, so the execution of them does not generate any events. Also, as it will be explained later, these operations are related with `Aggregate` instances, so it is needed to use the *Snapshot* component, whose purpose is to provide a simple and efficient way to access them.
 
 #### Get
 
@@ -235,7 +235,7 @@ If the validation checks are not needed, or can be performed directly at applica
 
 #### Find
 
-Previously described operations have one important thing in common, that is all of them need to know the exact aggregate instance to work with, in other words, all of them needed to know the exact identifier of the instance. Is true that in many cases, this is enough to resolve many use cases, but there are some situations in which a more advanced search is needed. A common example is when it's needed to apply operations to a set of instances characterised by special conditions and so on.   
+Previously described operations have one important thing in common, that is all of them need to know the exact aggregate instance to work with, in other words, all of them needed to know the exact identifier of the instance. Is true that in many cases, this is enough to resolve many use cases, but there are some situations in which a more advanced search is needed. A common example is when it is needed to apply operations to a set of instances characterised by special conditions and so on.   
 
 The way to perform this kind of queries is with the `find` class method, which not only filters instances according to a given `Condition`, but can also return them with some specific `Ordering` and `limit` the maximum number of instances. For more details about how to write complex queries is highly recommended reading the [minos.common.queries](https://clariteia.github.io/minos_microservice_common/api/minos.common.queries.html) reference documentation. Another thing to know about the `find` class method is that it returns the obtained instances over an `AsyncIterator` and supports a streaming mode directly from the database if the `streaming_mode` flag is set to `True`.
 
@@ -295,9 +295,9 @@ class Exam(Aggregate):
 
 ## Defining the `Subject` reference...
 
-After being described the basics about aggregates and how to perform operations with them, the next natural step to be able to create complex data models is to learn how to create relations with another aggregates. One important thing to notice here is that whereas multiple *Aggregate* classes can coexist within the same microservice, the recommended strategy is to keep only one *Aggregate* per microservice. Then, assuming that it's needed to create a relation from one to another, `minos` provides the concept of *Aggregate References*, which allow to define the schema of the external *Aggregate*, so that the business logic within that microservice will be able to support on its fields.  
+After being described the basics about aggregates and how to perform operations with them, the next natural step to be able to create complex data models is to learn how to create relations with another aggregates. One important thing to notice here is that whereas multiple *Aggregate* classes can coexist within the same microservice, the recommended strategy is to keep only one *Aggregate* per microservice. Then, assuming that it is needed to create a relation from one to another, `minos` provides the concept of *Aggregate References*, which allow to define the schema of the external *Aggregate*, so that the business logic within that microservice will be able to support on its fields.  
 
-For example, if it's needed to relate the `Exam` aggregate with a supposed `Subject` aggregate defined on another microservice then using the `AggregateRef` will be the solution. One of the reasons why we need to have a reference with `Subject` could be to use the `title` field for some kind of query defined in the `QueryService` (which is described on :doc:`/quickstart/query`).
+For example, if it is needed to relate the `Exam` aggregate with a supposed `Subject` aggregate defined on another microservice then using the `AggregateRef` will be the solution. One of the reasons why we need to have a reference with `Subject` could be to use the `title` field for some kind of query defined in the `QueryService` (which is described on :doc:`/quickstart/query`).
 
 ```python
 from minos.common import (
@@ -310,7 +310,7 @@ class Subject(AggregateRef):
 ```
 
 After being defined the `AggregateRef`, the next step is to create the relation with the `Aggregate` one. The way to do that is using the `ModelRef` type hint. 
-The reason why it exists is because *Aggregate References* should be stored as references on the database, but in some cases, it's needed to be resolved to use some of their fields.  The `ModelRef` is mostly defined as:
+The reason why it exists is because *Aggregate References* should be stored as references on the database, but in some cases, it is needed to be resolved to use some of their fields.  The `ModelRef` is mostly defined as:
 ```python
 ModelRef[T] = Union[T, UUID] # in which T is an AggregateRef type 
 ```
@@ -331,7 +331,7 @@ class Exam(Aggregate):
 
 ## Defining the `Question` entity... 
 
-One of the most important parts of an exam is the set of questions. Here, the `Question` will be modeled as an `Entity` descendant. The *Entity* classes are characterised for being parts of the `Aggregate` one, with the extra capability to be uniquely identified based on an internal identifier. To know more about the `Entity` class, it's recommended to read the [TODO: link to architecture]. 
+One of the most important parts of an exam is the set of questions. Here, the `Question` will be modeled as an `Entity` descendant. The *Entity* classes are characterised for being parts of the `Aggregate` one, with the extra capability to be uniquely identified based on an internal identifier. To know more about the `Entity` class, it is recommended to read the [TODO: link to architecture]. 
 
 In this case, for sake or simplicity, the `Question` entity will only have two attributes: a `title`, which will contain the question to be answered, and a set of `answers` to be picked. But initially, `answers` will be ignored:
 ```python
@@ -344,7 +344,7 @@ class Question(Entity):
     # answers: ...
 ```
 
-After being defined the `Question` entity, the next step is to integrate it into the `Exam` aggregate. In this case, it's needed to have a special feature, which is multiplicity. 
+After being defined the `Question` entity, the next step is to integrate it into the `Exam` aggregate. In this case, it is needed to have a special feature, which is multiplicity. 
 
 A possible solution could be to use a `list` or something similar so that `questions: list[Question]` resolves the problem, but this approach has a caveat, that is the event publication. Using the `list` class, the `questions` field is treated as a standard field and the generated events will publish the full list of questions also when only one of them has a small change. In some cases this could be the needed behaviour, but another one can be used.
 
@@ -396,7 +396,7 @@ AggregateDiff(
 
 ## Defining the `Answer` value object...
 
-The last part before the `Exam` aggregate is ready is to define the available answers for the questions. In this case, the `Answer` class will be defined as a `ValueObject` descendant. *Value Object* classes are characterised by both qualities: They are immutable and the way to identify them is through their field values. To know more about this concept it's recommended to read the [TODO: link to architecture].
+The last part before the `Exam` aggregate is ready is to define the available answers for the questions. In this case, the `Answer` class will be defined as a `ValueObject` descendant. *Value Object* classes are characterised by both qualities: They are immutable and the way to identify them is through their field values. To know more about this concept it is recommended to read the [TODO: link to architecture].
 
 In this case, the `Answer` class will be composed of two simple attributes, the `text` containing the answer itself and a `correct` boolean flag. This strategy will allow to extend the implementation to multiple-answer questions without so much effort.
 
@@ -411,7 +411,7 @@ class Answer(ValueObject):
     correct: bool
 ```
 
-Similarly to the `Entity` case, to store a collection of `Value Object` instances, it's possible to use the `list`, but the best choice for most cases is the `ValueObjectSet` class, that also heirs from the [collections.abc.MutableSet](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableSet) base class. The main difference between `ValueObjectSet` and `EntitySet` is that in this case the hashing is performed from the field values of each `ValueObject` instance, instead of simply using the `Entity`'s unique identifier for obvious reasons.
+Similarly to the `Entity` case, to store a collection of `Value Object` instances, it is possible to use the `list`, but the best choice for most cases is the `ValueObjectSet` class, that also heirs from the [collections.abc.MutableSet](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableSet) base class. The main difference between `ValueObjectSet` and `EntitySet` is that in this case the hashing is performed from the field values of each `ValueObject` instance, instead of simply using the `Entity`'s unique identifier for obvious reasons.
 
 
 Then, if the `ValueObjectSet` is chosen as the collection of answers, the `Question` class will turns on:

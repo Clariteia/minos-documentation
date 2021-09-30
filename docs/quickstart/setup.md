@@ -4,9 +4,9 @@
 
 Before starting to think in multiple microservices, distributed environments and so on, it's easier and better to start
 by knowing what components are needed to build a microservice individually. For the sake of simplicity, each microservice
-can be seen as one small monolithic system that provides as limited or specialized functionality. Then, each
+can be thought as one small monolithic system that provides a limited or specialized functionality. Then, each
 microservice will probably need to interact with a storage system, contain some kind of business logic and expose that
-functionality over an external API, to be used by external clients and another microservices.
+functionality over an external API to be used by external clients and another microservices.
 
 ## Dependencies
 
@@ -59,7 +59,7 @@ services:
 
 ## Modularity
 
-Another important detail about how the `minos` framework is how it is packaged. Instead of providing all the framework
+Another important detail about the `minos` framework is how it is packaged. Instead of providing all the framework
 as a single and big component, it relies
 on `Python` [namespaces](https://packaging.python.org/guides/packaging-namespace-packages/) to provide a modular but
 organized way to install only the exact part of functionality that will be used. The main packages are the following
@@ -130,7 +130,7 @@ As many parts of the configuration requires digging deeper into each of the comp
 * `service.name`: The name of the microservice.
 * `service.aggregate`: The qualified `Python` path to the root aggregate.
 * `service.injections`: A mapping of instances to be injected around the framework to provide framework's functionality.
-* `service.services`: A set of background services whose main purpose that provide some framework's functionality. 
+* `service.services`: A set of background services whose main purpose that provide some framework's functionality.
 * `rest`: Configuration of the rest's interface.
 * `broker`: Configuration of the broker's interface.
 * `repository`: Configuration of the repository database.
