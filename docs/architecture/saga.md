@@ -1,4 +1,4 @@
-# SAGA
+# Saga Pattern
 
 ## Context
 Minos framework apply **Database per Service** Pattern. Each service has its own database. Some business transactions,
