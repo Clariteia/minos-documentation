@@ -103,11 +103,13 @@
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#command-line-interface">Command Line Interface</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#poetry">Poetry</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pipenv">Pipenv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pipenv">PipEnv</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#pip">Pip</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#containerization">Containerization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#docker">Docker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#docker-compose">Docker Compose</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#kubernetes">Kubernetes</a></li>
 </ul>
 </li>
@@ -188,11 +190,39 @@
 <h1>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>The last but not the least important step of building microservices with the <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework is the deployment one, in which everything related with the microservice running will be explained. At this point, the <code class="docutils literal notranslate"><span class="pre">minos.common.EntrypointLauncher</span></code> class plays an important role, being the one which is able to orchestrate all the internal services within the microservice.</p>
 </div>
 <div class="section" id="command-line-interface">
 <h2>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>A common way to start a <code class="docutils literal notranslate"><span class="pre">minos</span></code> microservice is executing a command over the shell. To do that, the microservice must provide a command line interface. A good alternative to do that is using the <a class="reference external" href="https://typer.tiangolo.com/">typer</a> library, that can be installed as follows:</p>
+<div class="section" id="poetry">
+<h3>Poetry<a class="headerlink" href="#poetry" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">typer</span></code> library can be included with the following command:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">poetry</span> <span class="n">add</span> <span class="n">typer</span>
+</pre></div>
+</div>
+<p>Then, to expose the <code class="docutils literal notranslate"><span class="pre">microservice</span></code> command and link it with the <code class="docutils literal notranslate"><span class="pre">main</span></code> function that will be defined on the <code class="docutils literal notranslate"><span class="pre">src/cli.py</span></code> file, the following lines are needed:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="c1"># pyproject.toml</span>
+<span class="p">...</span>
+<span class="k">[tool.poetry.scripts]</span>
+<span class="n">microservice</span> <span class="o">=</span> <span class="s">&quot;src.cli:main&quot;</span>
+<span class="p">...</span>
+</pre></div>
+</div>
+<p>Then, the way to activate the Poetry’s virtual environment can be done with:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">poetry</span> <span class="n">shell</span>
+</pre></div>
+</div>
+<p>And now, the <code class="docutils literal notranslate"><span class="pre">microservice</span></code> command should be available on the current shell. The next step is to add the CLI code.</p>
+</div>
+<div class="section" id="pipenv">
+<h3>PipEnv<a class="headerlink" href="#pipenv" title="Permalink to this headline">¶</a></h3>
+<p>[TODO: Include pipenv guide.]</p>
+</div>
+<div class="section" id="pip">
+<h3>Pip<a class="headerlink" href="#pip" title="Permalink to this headline">¶</a></h3>
+<p>[TODO: Include pip guide.]</p>
+<p>After being set up the <code class="docutils literal notranslate"><span class="pre">microservice</span></code> command to be linked to the <code class="docutils literal notranslate"><span class="pre">main</span></code> function defined on the <code class="docutils literal notranslate"><span class="pre">src/cli.py</span></code> file, the next step is to properly add the <code class="docutils literal notranslate"><span class="pre">src/cli.py</span></code> file. Here is a standard template that can be used among most of the microservices created with the <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/cli.py&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">sys</span>
@@ -232,7 +262,9 @@
     <span class="n">app</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>TODO</p>
+<p>The most interesting part here is the <code class="docutils literal notranslate"><span class="pre">start</span></code> function, that handles the <code class="docutils literal notranslate"><span class="pre">microservice</span> <span class="pre">start</span></code> command. The purpose of this function is to create an <code class="docutils literal notranslate"><span class="pre">EntrypointLauncher</span></code> instance from the configuration file (typically the <code class="docutils literal notranslate"><span class="pre">config.yml</span></code>) and then execute its <code class="docutils literal notranslate"><span class="pre">launch()</span></code> method, that orchestrates everything needed to start the microservice.</p>
+<p>An important detail to notice is the purpose of the <code class="docutils literal notranslate"><span class="pre">external_modules</span></code> argument, which in this case receives a list containing the <code class="docutils literal notranslate"><span class="pre">src.queries</span></code> module. That is the way to “register” modules that must be linked to the <code class="docutils literal notranslate"><span class="pre">minos</span></code> dependency injection system. In this case, is needed to define a single <code class="docutils literal notranslate"><span class="pre">query_repository</span></code> instance among all the microservice and use it by the <code class="docutils literal notranslate"><span class="pre">ExamQueryService</span></code>.</p>
+<p>Another way to call the <code class="docutils literal notranslate"><span class="pre">src.cli:main</span></code> function is directly by the module’s entrypoint i.e. the <code class="docutils literal notranslate"><span class="pre">__main__.py</span></code> file. In this case, it can be done as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;src/__main__.py&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">.cli</span> <span class="kn">import</span> <span class="p">(</span>
@@ -243,41 +275,19 @@
     <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="section" id="poetry">
-<h3>Poetry<a class="headerlink" href="#poetry" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">poetry</span> <span class="n">add</span> <span class="n">typer</span>
-</pre></div>
+<p>Once everything related to the command line interface is explained, the next part is to talk about the containerization of the microservice.</p>
 </div>
-<p>TODO</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="c1"># pyproject.toml</span>
-<span class="p">...</span>
-<span class="k">[tool.poetry.scripts]</span>
-<span class="n">microservice</span> <span class="o">=</span> <span class="s">&quot;src.cli:main&quot;</span>
-<span class="p">...</span>
-</pre></div>
 </div>
-<p>TODO</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">poetry</span> <span class="n">run</span> <span class="n">microservice</span> <span class="n">start</span>
-</pre></div>
-</div>
-<p>TODO</p>
-</div>
-<div class="section" id="pipenv">
-<h3>Pipenv<a class="headerlink" href="#pipenv" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
-</div>
-<div class="section" id="pip">
-<h3>Pip<a class="headerlink" href="#pip" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
-</div>
+<div class="section" id="containerization">
+<h2>Containerization<a class="headerlink" href="#containerization" title="Permalink to this headline">¶</a></h2>
+<p>As in any microservice-based system, the containerization process is one of the most important parts of the deployment, being the standard way to deliver each piece of code in a self-contained way.</p>
 </div>
 <div class="section" id="docker">
 <h2>Docker<a class="headerlink" href="#docker" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>To create a dockerized image of the microservice the first step is to add a <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code> that defines the building steps. Here is a common template used by the <code class="docutils literal notranslate"><span class="pre">minos</span></code> microservices:</p>
 <div class="highlight-dockerfile notranslate"><div class="highlight"><pre><span></span><span class="c"># Dockerfile</span>
 
-<span class="k">FROM</span> <span class="s">ghcr.io/clariteia/minos:0.1.4</span> <span class="k">as</span> <span class="s">development</span>
+<span class="k">FROM</span> <span class="s">ghcr.io/clariteia/minos-microservice:0.1.5</span> <span class="k">as</span> <span class="s">development</span>
 
 <span class="k">COPY</span> ./pyproject.toml ./poetry.lock ./
 <span class="k">RUN</span> poetry install --no-root
@@ -288,7 +298,7 @@
 <span class="k">RUN</span> poetry <span class="nb">export</span> --without-hashes &gt; req.txt <span class="o">&amp;&amp;</span> pip wheel -r req.txt --wheel-dir ./dist
 <span class="k">RUN</span> poetry build --format wheel
 
-<span class="k">FROM</span> <span class="s">python:slim</span> <span class="k">as</span> <span class="s">production</span>
+<span class="k">FROM</span> <span class="s">python:3.9-slim</span> <span class="k">as</span> <span class="s">production</span>
 <span class="k">COPY</span> --from<span class="o">=</span>build /microservice/dist/ ./dist
 <span class="k">RUN</span> pip install --no-deps ./dist/*
 <span class="k">COPY</span> ./config.yml ./config.yml
@@ -296,11 +306,23 @@
 <span class="k">CMD</span> <span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>TODO</p>
+<p>To build the image, a command like this one can be used:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker build -t exam-microservice:0.1.0
+</pre></div>
+</div>
+<p>Then, the microservice can be started with the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker run -it exam-microservice:0.1.0
+</pre></div>
+</div>
+<p>After being described how to deploy single microservices the next step is to orchestrate many of them.</p>
+</div>
+<div class="section" id="docker-compose">
+<h2>Docker Compose<a class="headerlink" href="#docker-compose" title="Permalink to this headline">¶</a></h2>
+<p>[TODO: Include kubernetes.]</p>
 </div>
 <div class="section" id="kubernetes">
 <h2>Kubernetes<a class="headerlink" href="#kubernetes" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>[TODO: Include kubernetes.]</p>
 </div>
 </div>
 
