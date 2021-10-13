@@ -6,7 +6,7 @@ The last but not the least important step of building microservices with the `mi
 
 ## Command Line Interface
 
- A common way to start a ``minos`` microservice is executing a command over the shell. To do that, the microservice must provide a command line interface. A good alternative to do that is using the [typer](https://typer.tiangolo.com/) library, that can be installed as follows:
+A common way to start a ``minos`` microservice is executing a command over the shell. To do that, the microservice must provide a command line interface. A good alternative to do that is using the [typer](https://typer.tiangolo.com/) library, that can be installed as follows:
 
 ### Poetry
 
@@ -104,9 +104,11 @@ Once everything related to the command line interface is explained, the next par
 
 ## Containerization
 
+As in any microservice-based system, the containerization process is one of the most important parts of the deployment, being the standard way to deliver each piece of code in a self-contained way.
+
 ## Docker
 
-TODO
+To create a dockerized image of the microservice the first step is to add a `Dockerfile` that defines the building steps. Here is a common template used by the `minos` microservices: 
 
 ```dockerfile
 # Dockerfile
@@ -130,7 +132,22 @@ ENTRYPOINT ["microservice"]
 CMD ["start"]
 ```
 
-TODO
+To build the image, a command like this one can be used:
+```shell
+
+docker build -t exam-microservice:0.1.0
+```
+
+Then, the microservice can be started with the following command:
+
+```shell
+docker run -it exam-microservice:0.1.0 
+```
+
+After being described how to deploy single microservices the next step is to orchestrate many of them.
+
+## Docker Compose
+[TODO: Include kubernetes.]
 
 ## Kubernetes
-TODO
+[TODO: Include kubernetes.]
