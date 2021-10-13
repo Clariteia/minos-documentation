@@ -1,4 +1,4 @@
-# Command-Query Responsibility Segregation (CQRS)
+# Command-Query Responsibility Segregation
     
 .. toctree::
    :maxdepth: 2
