@@ -5,7 +5,9 @@
    
    data_model
    messaging
-   cqrs
+   request
+   response
+   cqrs/_toc
    ports_and_adapters
    rest_handler
    saga

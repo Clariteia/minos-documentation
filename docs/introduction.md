@@ -6,7 +6,7 @@ Minos is a framework which helps you create [reactive](https://www.reactivemanif
 Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an 
 asynchronous environment.
 
-![minos_architecture](./pictures/minos_architecture.png)
+![minos_architecture](_static/images/minos_architecture.png)
 
 
 ## Advantages

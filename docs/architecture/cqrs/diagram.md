@@ -1,3 +1,5 @@
+# Diagram
+
 .. uml::
    :align: center
 
