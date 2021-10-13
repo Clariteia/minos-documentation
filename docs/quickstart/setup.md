@@ -12,9 +12,9 @@ functionality over an external API, to be used by external clients and another m
 
 To be able to provide all that environment functionalities, `minos` relies on external dedicated libraries. For example,
 to read or store data in postgres database `aiopg` is used, to publish or subscribe to kafka topics `aiokafka` is used
-and to expose a REST interface `aiohttp` is used. In any case, the `minos` philosophy is that the surrounding
-technologies must not be frozen to these and each of project must have its own ones so the list of supported databases
-and brokers will be increased in future `minos` releases.
+and to expose a REST interface `aiohttp` is used, the chosen API Gateway in this case is `kong`. In any case, the `minos` 
+philosophy is that the surrounding technologies must not be frozen to these and each of project must have its own ones 
+so the list of supported databases and brokers will be increased in future `minos` releases.
 
 Another important thing to know is that `minos` relies on latest `Python` functionalities so the minimal required
 version is `3.9` or greater. One of the reasons are the use of *async* code together with *type hinted* code.
@@ -24,6 +24,7 @@ Then, for this quickstart the following dependencies are needed:
 * **Python** >= 3.9
 * **PostgreSQL** >= 9.3
 * **Kafka** >= 2.8
+* **Kong** >= 2.6
 
 In order to ease the quickstart process, here is a simple `docker-compose.yml` that provides the environment
 dependencies:
@@ -41,10 +42,6 @@ services:
       POSTGRES_USER: minos
       POSTGRES_PASSWORD: min0s
       POSTGRES_DB: exam_db
-  zookeeper:
-    image: wurstmeister/zookeeper:latest
-    ports:
-      - "2181:2181"
   kafka:
     image: wurstmeister/kafka:latest
     ports:
@@ -55,6 +52,17 @@ services:
       KAFKA_ADVERTISED_HOST_NAME: localhost
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_DELETE_TOPIC_ENABLE: "true"
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+  kong:
+    image: kong:latest
+    ports:
+      - "5567:5567"
+      - "5566:5566"
+    environment:
+      KONG_DATABASE: off
+      KONG_PROXY_LISTEN: 0.0.0.0:5566
+      KONG_ADMIN_LISTEN: 0.0.0.0:5567
 ```
 
 ## Modularity
@@ -159,7 +167,7 @@ service:
     repository: minos.common.PostgreSqlRepository
     saga_manager: minos.saga.SagaManager
     snapshot: minos.common.PostgreSqlSnapshot
-    # discovery: minos.networks.DiscoveryConnector
+    discovery: minos.networks.DiscoveryConnector
     query_repository: src.queries.ExamQueryRepository
   services:
     - minos.networks.ConsumerService
@@ -202,11 +210,10 @@ commands:
 saga:
   storage:
     path: ./exam.lmdb
-# TODO: include discovery service into the `docker-compose.yml`
-# discovery:
-#   client: minos.networks.MinosDiscoveryClient
-#   host: localhost
-#   port: 5567
+discovery:
+  client: minos.networks.KongDiscoveryClient
+  host: localhost
+  port: 5567
 ```
 
 ## API Gateway and Discovery
