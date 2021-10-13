@@ -9,9 +9,7 @@ Adapters are by default abstracted through `Minos` [decorators](decorators.md). 
 .. toctree::
    :maxdepth: 2
    
-   messaging
-   request
-   response
-   rest_handler
+   messaging/_toc
    decorators
+   interfaces/_toc
    transactionality
