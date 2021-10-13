@@ -98,7 +98,6 @@
 <li class="toctree-l2"><a class="reference internal" href="messaging.html">Messaging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="request.html">Request</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Response</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#request">Request</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cqrs/_toc.html">CQRS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ports_and_adapters.html">Ports and Adapters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rest_handler.html">REST Handler</a></li>
@@ -179,9 +178,6 @@
             
   <div class="section" id="response">
 <h1>Response<a class="headerlink" href="#response" title="Permalink to this headline">¶</a></h1>
-</div>
-<div class="section" id="request">
-<h1>Request<a class="headerlink" href="#request" title="Permalink to this headline">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">Minos</span></code> commands and queries might return some values to their callers. Thus, a <code class="docutils literal notranslate"><span class="pre">Response</span></code> class is provided by <code class="docutils literal notranslate"><span class="pre">Minos</span></code> that abstracts protocol specific details.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">Response</span></code> structure receives an object that is serialized and sent back to the caller.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@enroute</span><span class="o">.</span><span class="n">rest</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;/products&quot;</span><span class="p">,</span> <span class="s2">&quot;GET&quot;</span><span class="p">)</span>
