@@ -24,3 +24,5 @@ The `@enroute` decorator is divided in the following categories:
 - `@enroute.rest` deals with REST endpoint definition
   - `@enroute.rest.command(endpoint: str, verb: str)` attaches the method to a REST endpoint in the command service.
   - `@enroute.rest.query(endpoint: str, verb: str)` attaches the method to a REST endpoint in the query service.
+- `@enroute.periodic` TODO 
+  - `@enroute.periodic.event(crontab: str | crontab.CronTab)` TODO
