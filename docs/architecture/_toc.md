@@ -7,3 +7,4 @@
    ports_and_adapters/_toc
    cqrs/_toc
    saga
+   infrastructure/_toc
