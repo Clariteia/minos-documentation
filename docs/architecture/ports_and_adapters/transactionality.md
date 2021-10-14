@@ -3,7 +3,7 @@
 To ensure transactionality in the exchange of information between the different services or itself, the `Broker` is 
 used to store the information in the database and `Handler` to retrieve it.
 
-For more details on full workflow of how messages are processed see [Messaging introduction](./messaging.html).
+For more details on full workflow of how messages are processed see :doc:`/architecture/ports_and_adapters/interfaces/broker`.
 
 In this section we will detail the components shown in green in the following diagram:
 
@@ -42,7 +42,7 @@ microservice X and Handler is the one that obtains them from the DB of microserv
 example on the communication of 2 microservices instead of one.**
 
 
-## Broker
+## Producer
 
 The broker is in charge of **adding messages** to the microservice's local database and **triggering a notification** 
 to let know `Producer` that there are new messages.
@@ -85,7 +85,7 @@ to let know `Producer` that there are new messages.
    NOTIFY producer_queue
    ```
 
-## Handler
+## Consumer
 
 It is responsible of getting the message from database and triggering the final action (calling the function that 
 is subscribed to the message for example).

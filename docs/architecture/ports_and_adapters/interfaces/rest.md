@@ -1,4 +1,4 @@
-# REST Handler
+# REST
 
 Minos being a microservices' framework, it's very important to support a REST port to access it. Thus, Minos REST
 Handler keeps a REST server active for clients to consume its endpoints.

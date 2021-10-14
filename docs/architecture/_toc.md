@@ -4,12 +4,6 @@
    :maxdepth: 2
    
    data_model
-   messaging
-   request
-   response
+   ports_and_adapters/_toc
    cqrs/_toc
-   ports_and_adapters
-   rest_handler
    saga
-   decorators
-   transactionality

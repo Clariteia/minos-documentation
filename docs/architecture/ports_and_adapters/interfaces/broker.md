@@ -1,4 +1,4 @@
-# Messaging
+# Broker
 
 ## Introduction
 
@@ -55,7 +55,7 @@ consumption of each microservice).
 
 Before the message is finally published in Kafka, it goes through a series of operations involving the following actors,
 which are necessary to know before going deeper into the flow:
-+ [Broker](./transactionality.html#broker): In charge of storing the received message in the database and launching a 
++ :doc:`Producer </architecture/ports_and_adapters/transactionality>`: In charge of storing the received message in the database and launching a 
   [NOTIFY](https://www.postgresql.org/docs/9.1/sql-notify.html).
 + **Database**: It is the database where the message is stored to preserve transactionality and to be tolerant to system 
   failures.
@@ -86,7 +86,7 @@ Now that we know the components involved, let's look at the complete flow:
    @enduml
 
 
-1. The [Broker](./transactionality.html#broker) receive the message and add it to the database. Then trigger notify action to the database.
+1. The :doc:`Producer </architecture/ports_and_adapters/transactionality>` receive the message and add it to the database. Then trigger notify action to the database.
 
    
 2. The `Producer` listens to new messages
@@ -137,7 +137,7 @@ The components that must be known beforehand are:
 + Consumer: It is in charge of obtaining the message from Kafka and storing it in the database.
 + Database: It is the database where the message is stored to preserve transactionality and to be tolerant to system 
   failures.
-+ [Handler](./transactionality.html#handler): It is responsible of triggering the final action (calling the function that is subscribed to the message 
++ :doc:`Consumer </architecture/ports_and_adapters/transactionality>`: It is responsible of triggering the final action (calling the function that is subscribed to the message 
   for example).
 
 Now that we know the components involved, let's look at the complete flow:
@@ -187,7 +187,7 @@ Now that we know the components involved, let's look at the complete flow:
    NOTIFY consumer_queue
    ```
    
-3. The [Handler](./transactionality.html#handler) listens to new messages and reads from the database table 
+3. The :doc:`Consumer </architecture/ports_and_adapters/transactionality>` listens to new messages and reads from the database table 
    (mentioned in step 1) obtaining the new messages.
    The `Handler` reads from the database table (mentioned in step 1) obtaining the new messages.
    

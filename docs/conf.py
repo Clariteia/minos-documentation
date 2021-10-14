@@ -39,6 +39,7 @@ extensions = [
     "sphinx_rtd_theme",
     "m2r2",
     "sphinxcontrib.plantuml",
+    'sphinx.ext.autosectionlabel',
 ]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -174,3 +175,7 @@ texinfo_documents = [
      'One line description of project.',
      'Miscellaneous'),
 ]
+
+# Make sure the target is unique
+autosectionlabel_prefix_document = True
+
