@@ -95,15 +95,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/_toc.html">QuickStart</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Architecture</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="data_model.html">Data Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="messaging.html">Messaging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="request.html">Request</a></li>
-<li class="toctree-l2"><a class="reference internal" href="response.html">Response</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cqrs/_toc.html">CQRS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ports_and_adapters.html">Ports and Adapters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rest_handler.html">REST Handler</a></li>
-<li class="toctree-l2"><a class="reference internal" href="saga.html">SAGA</a></li>
-<li class="toctree-l2"><a class="reference internal" href="decorators.html">Decorators</a></li>
-<li class="toctree-l2"><a class="reference internal" href="transactionality.html">Transactionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ports_and_adapters/_toc.html">Ports and Adapters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cqrs/_toc.html">Command-Query Responsibility Segregation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="saga.html">Saga Pattern</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
@@ -185,31 +179,21 @@
 <li class="toctree-l2"><a class="reference internal" href="data_model.html#aggregate">Aggregate</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="messaging.html">Messaging</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="messaging.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="messaging.html#message-publishing">Message Publishing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="messaging.html#message-receiving">Message Receiving</a></li>
-<li class="toctree-l2"><a class="reference internal" href="messaging.html#event">Event</a></li>
-<li class="toctree-l2"><a class="reference internal" href="messaging.html#command">Command</a></li>
-<li class="toctree-l2"><a class="reference internal" href="messaging.html#command-reply">Command Reply</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ports_and_adapters/_toc.html">Ports and Adapters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ports_and_adapters/messaging/_toc.html">Messaging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ports_and_adapters/decorators.html">Decorators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ports_and_adapters/interfaces/_toc.html">Interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ports_and_adapters/transactionality.html">Transactionality</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="request.html">Request</a></li>
-<li class="toctree-l1"><a class="reference internal" href="response.html">Response</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cqrs/_toc.html">CQRS</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="cqrs/_toc.html">Command-Query Responsibility Segregation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="cqrs/cqrs.html">CQRS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cqrs/command_service.html">Command Service</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cqrs/query_service.html">Query Service</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cqrs/diagram.html">Diagram</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="ports_and_adapters.html">Ports and Adapters</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rest_handler.html">REST Handler</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="rest_handler.html#configured-through-decorators">Configured through decorators</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rest_handler.html#request-parameter">Request parameter</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="saga.html">SAGA</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="saga.html">Saga Pattern</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="saga.html#context">Context</a></li>
 <li class="toctree-l2"><a class="reference internal" href="saga.html#problem">Problem</a></li>
 <li class="toctree-l2"><a class="reference internal" href="saga.html#solution">Solution</a></li>
@@ -218,16 +202,6 @@
 <li class="toctree-l2"><a class="reference internal" href="saga.html#saga-structure">SAGA structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="saga.html#saga-manager">SAGA Manager</a></li>
 <li class="toctree-l2"><a class="reference internal" href="saga.html#examples">Examples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="decorators.html">Decorators</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="decorators.html#what-are-decorators">What are decorators?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="decorators.html#minos-decorators"><code class="docutils literal notranslate"><span class="pre">Minos</span></code> decorators</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="transactionality.html">Transactionality</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="transactionality.html#broker">Broker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="transactionality.html#handler">Handler</a></li>
 </ul>
 </li>
 </ul>

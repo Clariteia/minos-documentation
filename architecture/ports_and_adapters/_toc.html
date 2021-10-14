@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Command-Query Responsibility Segregation &mdash; Minos Documentation  documentation</title>
+  <title>Ports and Adapters &mdash; Minos Documentation  documentation</title>
   
 
   
@@ -42,8 +42,8 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="CQRS" href="cqrs.html" />
-    <link rel="prev" title="Transactionality" href="../ports_and_adapters/transactionality.html" />
+    <link rel="next" title="Messaging" href="messaging/_toc.html" />
+    <link rel="prev" title="Data Model" href="../data_model.html" />
     <link href="../../_static/style.css" rel="stylesheet" type="text/css">
 
 </head>
@@ -95,14 +95,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart/_toc.html">QuickStart</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../_toc.html">Architecture</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../data_model.html">Data Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ports_and_adapters/_toc.html">Ports and Adapters</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Command-Query Responsibility Segregation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cqrs.html">CQRS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="command_service.html">Command Service</a></li>
-<li class="toctree-l3"><a class="reference internal" href="query_service.html">Query Service</a></li>
-<li class="toctree-l3"><a class="reference internal" href="diagram.html">Diagram</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Ports and Adapters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="messaging/_toc.html">Messaging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="decorators.html">Decorators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interfaces/_toc.html">Interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transactionality.html">Transactionality</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../cqrs/_toc.html">Command-Query Responsibility Segregation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../saga.html">Saga Pattern</a></li>
 </ul>
 </li>
@@ -157,13 +157,13 @@
         
           <li><a href="../_toc.html">Architecture</a> &raquo;</li>
         
-      <li>Command-Query Responsibility Segregation</li>
+      <li>Ports and Adapters</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../../_sources/architecture/cqrs/_toc.md.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/architecture/ports_and_adapters/_toc.md.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -176,14 +176,33 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="command-query-responsibility-segregation">
-<h1>Command-Query Responsibility Segregation<a class="headerlink" href="#command-query-responsibility-segregation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="ports-and-adapters">
+<h1>Ports and Adapters<a class="headerlink" href="#ports-and-adapters" title="Permalink to this headline">¶</a></h1>
+<p>The ports and adapters architecture is a generalization of the traditional layers architecture meant to emphasize that, in modern systems, data sources might be requests initiators as well as receivers. Thus, it creates de <code class="docutils literal notranslate"><span class="pre">Port</span></code> abstraction, meaning any external system that meets a certain protocol. An <code class="docutils literal notranslate"><span class="pre">Adapter</span></code> is then a piece of software which takes that request and converts it into an actually useful structure, usable by the core of the application.</p>
+<p>Minos, aiming at building reactive microservices, follows a Ports and Adapters architecture in order to provide a way to easily extend the microservices’ functionality with new technologies.</p>
+<p>Adapters are by default abstracted through <code class="docutils literal notranslate"><span class="pre">Minos</span></code> <a class="reference internal" href="decorators.html"><span class="doc">Decorators</span></a>. This way, the developer can concentrate on writing valuable code instead of dealing with technology specific things.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="cqrs.html">CQRS</a></li>
-<li class="toctree-l1"><a class="reference internal" href="command_service.html">Command Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="query_service.html">Query Service</a></li>
-<li class="toctree-l1"><a class="reference internal" href="diagram.html">Diagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="messaging/_toc.html">Messaging</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="messaging/request.html">Request</a></li>
+<li class="toctree-l2"><a class="reference internal" href="messaging/response.html">Response</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="decorators.html">Decorators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="decorators.html#what-are-decorators">What are decorators?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decorators.html#minos-decorators"><code class="docutils literal notranslate"><span class="pre">Minos</span></code> decorators</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaces/_toc.html">Interfaces</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaces/broker.html">Broker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaces/rest.html">REST</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="transactionality.html">Transactionality</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="transactionality.html#producer">Producer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transactionality.html#consumer">Consumer</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -194,8 +213,8 @@
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="cqrs.html" class="btn btn-neutral float-right" title="CQRS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="../ports_and_adapters/transactionality.html" class="btn btn-neutral float-left" title="Transactionality" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="messaging/_toc.html" class="btn btn-neutral float-right" title="Messaging" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../data_model.html" class="btn btn-neutral float-left" title="Data Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
