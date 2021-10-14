@@ -4,7 +4,7 @@ The ports and adapters architecture is a generalization of the traditional layer
 
 Minos, aiming at building reactive microservices, follows a Ports and Adapters architecture in order to provide a way to easily extend the microservices' functionality with new technologies. 
 
-Adapters are by default abstracted through `Minos` [decorators](decorators.md). This way, the developer can concentrate on writing valuable code instead of dealing with technology specific things.
+Adapters are by default abstracted through `Minos` :doc:`/architecture/ports_and_adapters/decorators`. This way, the developer can concentrate on writing valuable code instead of dealing with technology specific things.
 
 .. toctree::
    :maxdepth: 2

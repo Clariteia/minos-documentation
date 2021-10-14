@@ -112,7 +112,7 @@ The communication between the microservices is done using `Command` and waiting 
   @enduml
 
 
-You can see more details about the exchange of messages in the [messaging](./messaging.html) section.
+You can see more details about the exchange of messages in the :doc:`/architecture/ports_and_adapters/interfaces/broker` section.
 
 ## SAGA structure
 
