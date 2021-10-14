@@ -1,7 +1,5 @@
 # Response
 
-# Request 
-
 `Minos` commands and queries might return some values to their callers. Thus, a `Response` class is provided by `Minos` that abstracts protocol specific details. 
 
 The `Response` structure receives an object that is serialized and sent back to the caller.
