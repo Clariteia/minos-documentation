@@ -16,7 +16,9 @@ Once a brief introduction to the periodic tasks was provided, the next step is t
 
 ### Periodic Task
 
-[TODO: Include a detailed explanation about how it works.]
+The minimal unit of logic to start creating periodic tasks with the `minos` framework is the `minos.networks.PeriodicTask` class, which is composed by a *cron pattern* and a *callable function*. The class provides also the necessary methods to start, stop and get information about the execution status. 
+
+An important detail to know about how the periodicity is implemented is that it only uses a single `asyncio.Task`, that runs an infinite loop paused with calls to `asyncio.sleep`. This is an important difference respect to another periodic task implementations based on `asyncio`, that instead of a single task, create a new task for each cycle postponing it with the `asyncio.AbstractEventLoop.call_later` method. But, to reduce the task creation overhead and keep the code simple `minos` follows the first approach.
 
 [TODO: Include a diagram about periodic execution.]
 
