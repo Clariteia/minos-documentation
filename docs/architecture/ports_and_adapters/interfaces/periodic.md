@@ -20,6 +20,8 @@ The minimal unit of logic to start creating periodic tasks with the `minos` fram
 
 An important detail to know about how the periodicity is implemented is that it only uses a single `asyncio.Task`, that runs an infinite loop paused with calls to `asyncio.sleep`. This is an important difference respect to another periodic task implementations based on `asyncio`, that instead of a single task, create a new task for each cycle postponing it with the `asyncio.AbstractEventLoop.call_later` method. But, to reduce the task creation overhead and keep the code simple `minos` follows the first approach.
 
+[TODO: Describe the ScheduledRequest]
+
 [TODO: Include a diagram about periodic execution.]
 
 * `PeriodicTask(crontab: str | crontab.CronTab, fn: Callable[[ScheduledRequest], Awaitable[None]])`: 
@@ -58,4 +60,67 @@ As usual in `minos`, every component that needs to keep alive along the microser
 
 ## Examples
 
-[TODO: Include some examples]
+To create a simple periodic task the `PeriodicTask` can be used:
+
+```python
+import asyncio
+
+from minos.networks import (
+    PeriodicTask,
+    ScheduledRequest
+)
+
+
+async def callback(request: ScheduledRequest) -> None:
+    content = await request.content()
+    print(f"I was called at {content.scheduled_at}!")
+
+
+async def main():
+    periodic = PeriodicTask("* * * * *", callback)
+    await periodic.start()
+    
+    await asyncio.gather(*asyncio.all_tasks())
+
+    
+asyncio.run(main())
+```
+
+If multiple tasks must be executed, the best option is to use the `PeriodicTaskScheduler` class:
+
+```python
+import asyncio
+
+from minos.networks import (
+    PeriodicTask,
+    PeriodicTaskScheduler,
+    ScheduledRequest
+)
+
+
+async def callback_1(request: ScheduledRequest) -> None:
+    print(f"I'm the first task!")
+
+    
+async def callback_2(request: ScheduledRequest) -> None:
+    print(f"I'm the second task!")
+
+    
+async def callback_3(request: ScheduledRequest) -> None:
+    print(f"I'm the third task!")
+
+    
+async def main():
+    
+    scheduler = PeriodicTaskScheduler({
+        PeriodicTask("* * * * *", callback_1),
+        PeriodicTask("* * * * *", callback_2),
+        PeriodicTask("@daily", callback_3)
+    })
+    await scheduler.start()
+    
+    await asyncio.gather(*asyncio.all_tasks())
+
+    
+asyncio.run(main())
+```
