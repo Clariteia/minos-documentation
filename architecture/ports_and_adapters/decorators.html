@@ -201,17 +201,22 @@
 <h2><code class="docutils literal notranslate"><span class="pre">Minos</span></code> decorators<a class="headerlink" href="#minos-decorators" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">&#64;enroute</span></code> decorator is divided in the following categories:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.broker</span></code> deals with event subscription</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.broker</span></code> deals with event subscription. More information can be seen at <a class="reference internal" href="interfaces/broker.html"><span class="doc">Broker</span></a>.</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.broker.command(event:</span> <span class="pre">str)</span></code> attaches the method to a command invoked through the broker.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.broker.query(event:</span> <span class="pre">str)</span></code> attaches the method to a query invoked through the broker.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.broker.event(event:</span> <span class="pre">str)</span></code> attaches the method to an event published by a microservice.</p></li>
 </ul>
 </li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.rest</span></code> deals with REST endpoint definition</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.rest</span></code> deals with REST endpoint definition. More information can be seen at <a class="reference internal" href="interfaces/rest.html"><span class="doc">REST</span></a>.</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.rest.command(endpoint:</span> <span class="pre">str,</span> <span class="pre">verb:</span> <span class="pre">str)</span></code> attaches the method to a REST endpoint in the command service.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.rest.query(endpoint:</span> <span class="pre">str,</span> <span class="pre">verb:</span> <span class="pre">str)</span></code> attaches the method to a REST endpoint in the query service.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.periodic</span></code> deals with periodic tasks. More information can be seen at <a class="reference internal" href="interfaces/periodic.html"><span class="doc">Periodic</span></a>.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;enroute.periodic.event(crontab:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">crontab.CronTab)</span></code> attaches the method to a periodic event that will happen according to the given crontab definition.</p></li>
 </ul>
 </li>
 </ul>

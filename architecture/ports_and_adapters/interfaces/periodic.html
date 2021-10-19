@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Periodic &mdash; Minos Documentation  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Transactionality" href="../transactionality.html" />
+    <link rel="prev" title="REST" href="rest.html" />
+    <link href="../../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Minos Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart/_toc.html">QuickStart</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../_toc.html">Architecture</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../data_model.html">Data Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../_toc.html">Ports and Adapters</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../messaging/_toc.html">Messaging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../decorators.html">Decorators</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="_toc.html">Interfaces</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="broker.html">Broker</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rest.html">REST</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Periodic</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../transactionality.html">Transactionality</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../cqrs/_toc.html">Command-Query Responsibility Segregation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../saga.html">Saga Pattern</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Minos Documentation</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../_toc.html">Architecture</a> &raquo;</li>
+        
+          <li><a href="../_toc.html">Ports and Adapters</a> &raquo;</li>
+        
+          <li><a href="_toc.html">Interfaces</a> &raquo;</li>
+        
+      <li>Periodic</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../../_sources/architecture/ports_and_adapters/interfaces/periodic.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="periodic">
+<h1>Periodic<a class="headerlink" href="#periodic" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This section provides a comprehensive explanation about periodic task execution and how <code class="docutils literal notranslate"><span class="pre">minos</span></code> implement this functionality. So, the first step is to define what a periodic task is:</p>
+<p><strong>Periodic Task</strong>: According to <a class="reference external" href="https://help.aroflo.com/display/office/Periodic+Tasks">Aroflo</a> a periodic task is a task that can be automatically generated at regular intervals (e.g. daily, weekly, monthly, yearly). This is ideal for recurring work and preventative maintenance.</p>
+<p>This definition mostly matches the idea of periodic tasks implemented on the <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework. So, to define a periodic task, two important parts are needed, a function that acts as the task logic, and an interval that defines the periodicity of the function execution.</p>
+<p>There are many ways to define a time interval, but one of the most populars on the software industry is the one based on the <a class="reference external" href="https://en.wikipedia.org/wiki/Cron">cron</a> command-line utility implemented by most of the unix systems. This strategy is based on a string pattern composed of 5 or more values representing the time (minutes, hours, days, etc.) and allows defining really complex rules without many effort. To understand better how the <em>cron</em> expressions works it’s recommended to visit <a class="reference external" href="https://en.wikipedia.org/wiki/Cron#CRON_expression">this</a> link and take a first contact on the <a class="reference external" href="https://crontab.guru/">crontab guru</a> website.</p>
+</div>
+<div class="section" id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+<p>Once a brief introduction to the periodic tasks was provided, the next step is to understand how the <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework implemented them. An important detail to notice at this point is that the framework strongly relies on the <a class="reference external" href="https://docs.python.org/3/library/asyncio.html">asyncio</a>, so this functionality is highly supported by that module.</p>
+<div class="section" id="periodic-task">
+<h3>Periodic Task<a class="headerlink" href="#periodic-task" title="Permalink to this headline">¶</a></h3>
+<p>The minimal unit of logic to start creating periodic tasks with the <code class="docutils literal notranslate"><span class="pre">minos</span></code> framework is the <code class="docutils literal notranslate"><span class="pre">minos.networks.PeriodicTask</span></code> class, which is composed by a <em>cron pattern</em> and a <em>callable function</em>. The class provides also the necessary methods to start, stop and get information about the execution status.</p>
+<p>An important detail to know about how the periodicity is implemented is that it only uses a single <code class="docutils literal notranslate"><span class="pre">asyncio.Task</span></code>, that runs an infinite loop paused with calls to <code class="docutils literal notranslate"><span class="pre">asyncio.sleep</span></code>. This is an important difference respect to another periodic task implementations based on <code class="docutils literal notranslate"><span class="pre">asyncio</span></code>, that instead of a single task, create a new task for each cycle postponing it with the <code class="docutils literal notranslate"><span class="pre">asyncio.AbstractEventLoop.call_later</span></code> method. But, to reduce the task creation overhead and keep the code simple <code class="docutils literal notranslate"><span class="pre">minos</span></code> follows the first approach.</p>
+<p>[TODO: Describe the ScheduledRequest]</p>
+<p>[TODO: Include a diagram about periodic execution.]</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PeriodicTask(crontab:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">crontab.CronTab,</span> <span class="pre">fn:</span> <span class="pre">Callable[[ScheduledRequest],</span> <span class="pre">Awaitable[None]])</span></code>:
+Construct a new instance containing the given crontab representing the periodicity of the task, and a callable function representing the task itself. The callable must follow the common prototype defined by <a class="reference internal" href="../messaging/_toc.html"><span class="doc">Messaging</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run_once()</span></code>:
+Perform a single execution of the given callable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run_forever()</span></code>:
+Perform the execution of the periodic task blocking the workflow.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start()</span></code>:
+Start the execution of the periodic task without blocking the workflow.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stop()</span></code>:
+Stop the execution of the periodic task.</p></li>
+</ul>
+</div>
+<div class="section" id="periodic-task-scheduler">
+<h3>Periodic Task Scheduler<a class="headerlink" href="#periodic-task-scheduler" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">minos.networks.PeriodicTaskScheduler</span></code> is the class which acts as a container of <code class="docutils literal notranslate"><span class="pre">PeriodicTask</span></code> instances so, its functionality is really simple. From one side, the tasks are set through the constructor and from the other side, the <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code> methods are the ones who transmit the corresponding call to all the tasks.</p>
+<p>[TODO: include a diagram about concurrent executions.]</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PeriodicTaskScheduler(tasks:</span> <span class="pre">Iterable[PeriodictTask])</span></code>:
+Construct a new instance containing the given iterable of tasks.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start()</span></code>:
+Start the execution of all the tasks concurrently.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stop()</span></code>:
+Stop the execution of all the tasks concurrently.</p></li>
+</ul>
+</div>
+<div class="section" id="periodic-task-scheduler-service">
+<h3>Periodic Task Scheduler Service<a class="headerlink" href="#periodic-task-scheduler-service" title="Permalink to this headline">¶</a></h3>
+<p>As usual in <code class="docutils literal notranslate"><span class="pre">minos</span></code>, every component that needs to keep alive along the microservice execution needs to have an associated service. In this case, the <code class="docutils literal notranslate"><span class="pre">minos.networks.PeriodicTaskSchedulerService</span></code> takes this role. To know more about how services are implemented in <code class="docutils literal notranslate"><span class="pre">minos</span></code>, it’s recommended to read the [TODO: include service section] section.</p>
+</div>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>To create a simple periodic task the <code class="docutils literal notranslate"><span class="pre">PeriodicTask</span></code> can be used:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PeriodicTask</span><span class="p">,</span>
+    <span class="n">ScheduledRequest</span>
+<span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">ScheduledRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">content</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;I was called at </span><span class="si">{</span><span class="n">content</span><span class="o">.</span><span class="n">scheduled_at</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">periodic</span> <span class="o">=</span> <span class="n">PeriodicTask</span><span class="p">(</span><span class="s2">&quot;* * * * *&quot;</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">periodic</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">asyncio</span><span class="o">.</span><span class="n">all_tasks</span><span class="p">())</span>
+
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>If multiple tasks must be executed, the best option is to use the <code class="docutils literal notranslate"><span class="pre">PeriodicTaskScheduler</span></code> class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="kn">from</span> <span class="nn">minos.networks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PeriodicTask</span><span class="p">,</span>
+    <span class="n">PeriodicTaskScheduler</span><span class="p">,</span>
+    <span class="n">ScheduledRequest</span>
+<span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">callback_1</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">ScheduledRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;I&#39;m the first task!&quot;</span><span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">callback_2</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">ScheduledRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;I&#39;m the second task!&quot;</span><span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">callback_3</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">ScheduledRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;I&#39;m the third task!&quot;</span><span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="n">PeriodicTaskScheduler</span><span class="p">({</span>
+        <span class="n">PeriodicTask</span><span class="p">(</span><span class="s2">&quot;* * * * *&quot;</span><span class="p">,</span> <span class="n">callback_1</span><span class="p">),</span>
+        <span class="n">PeriodicTask</span><span class="p">(</span><span class="s2">&quot;* * * * *&quot;</span><span class="p">,</span> <span class="n">callback_2</span><span class="p">),</span>
+        <span class="n">PeriodicTask</span><span class="p">(</span><span class="s2">&quot;@daily&quot;</span><span class="p">,</span> <span class="n">callback_3</span><span class="p">)</span>
+    <span class="p">})</span>
+    <span class="k">await</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">asyncio</span><span class="o">.</span><span class="n">all_tasks</span><span class="p">())</span>
+
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../transactionality.html" class="btn btn-neutral float-right" title="Transactionality" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="rest.html" class="btn btn-neutral float-left" title="REST" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Clariteia.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

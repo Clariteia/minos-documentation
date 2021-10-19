@@ -17,10 +17,12 @@ Here we have a `create_product()` command, which deals with the business logic o
 
 ## `Minos` decorators
 The `@enroute` decorator is divided in the following categories:
-- `@enroute.broker` deals with event subscription
+- `@enroute.broker` deals with event subscription. More information can be seen at :doc:`/architecture/ports_and_adapters/interfaces/broker`.
   - `@enroute.broker.command(event: str)` attaches the method to a command invoked through the broker.
   - `@enroute.broker.query(event: str)` attaches the method to a query invoked through the broker. 
   - `@enroute.broker.event(event: str)` attaches the method to an event published by a microservice.
-- `@enroute.rest` deals with REST endpoint definition
+- `@enroute.rest` deals with REST endpoint definition. More information can be seen at :doc:`/architecture/ports_and_adapters/interfaces/rest`.
   - `@enroute.rest.command(endpoint: str, verb: str)` attaches the method to a REST endpoint in the command service.
   - `@enroute.rest.query(endpoint: str, verb: str)` attaches the method to a REST endpoint in the query service.
+- `@enroute.periodic` deals with periodic tasks. More information can be seen at :doc:`/architecture/ports_and_adapters/interfaces/periodic`. 
+  - `@enroute.periodic.event(crontab: str | crontab.CronTab)` attaches the method to a periodic event that will happen according to the given crontab definition.
