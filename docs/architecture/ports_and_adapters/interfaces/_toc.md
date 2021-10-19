@@ -5,3 +5,4 @@
    
    broker
    rest
+   periodic
