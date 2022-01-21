@@ -2,9 +2,9 @@
 
 ## Introduction
 
-After being learned how to setup a `minos` microservice and knowing the `Aggregate` basics and being able to start working on the domain model, the next step is to expose the implemented functionality outside, to be used both by another microservices and external clients! One of the main advantages of using `minos` is that it is able to expose endpoints over different interfaces transparently, so that the infrastructure details (that in many cases require a big effort) are handled by the framework and the business logic becomes into the leading actor of the microservice. 
+After being learned how to set up a `minos` microservice and knowing the `Aggregate` basics and being able to start working on the domain model, the next step is to expose the implemented functionality outside, to be used both by another microservices and external clients! One of the main advantages of using `minos` is that it is able to expose endpoints over different interfaces transparently, so that the infrastructure details (that in many cases require a big effort) are handled by the framework and the business logic becomes the leading actor of the microservice. 
 
-The `minos` framework is based on the [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern, which is characterised by the partition of the system into two main parts: the one focused into `Command` processing and the one focused into `Query` resolving. Following the event driven ideas, the `CommandService` is the one who processes requests that modify the internal state of the microservice, with changes on the `Aggregate`, that generate events, that can be handled by the `QueryService`, who updates its own query-oriented database. Then, the requests that will not change the state of the microservice (so that, the ones that are read-only) should be resolved by the `QueryService` who asks its own database.
+The `minos` framework is based on the [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern, which is characterised by the partition of the system into two main parts: the one focused into `Commands` processing and the one focused into `Queries` resolving. Following the event driven ideas, the `CommandService` is the one that processes requests that modify the internal state of the microservice, with changes on the `Aggregate`, that generate events, that can be handled by the `QueryService`, that updates its own query-oriented database. Then, the requests that will not change the state of the microservice (so that, the ones that are read-only) should be resolved by the `QueryService` that asks its own database.
 
 The rest of the section is focused into the `CommandService` and the basic syntax to expose endpoints. Next, the :doc:`/quickstart/query` guide is fully focused into the `QueryService` and how to read and update the user-defined query database. 
 
@@ -48,7 +48,7 @@ class ExamCommandService(CommandService):
     ...
 ```
 
-The most important part here is the `minos.cqrs.CommandService` import. In `minos`, the `cqrs` module is the one who implements the abstract service classes, both for commands and for queries.
+The most important part here is the `minos.cqrs.CommandService` import. In `minos`, the `cqrs` module is the one that implements the abstract service classes, both for commands and for queries.
 
 Another important part is how to expose and set up the endpoints. In this case, `minos.networks` provides the `@enroute` decorator, that can be seen as a hierarchical decorator composed by the following parts:
 * `@enroute.rest.command(url, method)`: Exposes a *Command* request over the *REST* interface.
@@ -57,7 +57,7 @@ Another important part is how to expose and set up the endpoints. In this case, 
 * `@enroute.broker.query(topic)`:Exposes a *Query* request over the *Broker* interface.
 * `@enroute.broker.event(topic)`: Exposes an *Event* request over the *Broker* interface.
 
-After being learnt how to setup the services on the configuration file and take an overview over the `CommandService` base class and the `@enroute` decorator, it's time to introduce the expected function's prototype for each exposed endpoint:
+After being learnt how to set up the services on the configuration file and take an overview over the `CommandService` base class and the `@enroute` decorator, it is time to introduce the expected function's prototype for each exposed endpoint:
 
 ```python
 from minos.networks import (
@@ -74,7 +74,7 @@ class MyService(...):
 
 ```
 
-The `minos.networks.Request` and `minos.networks.Response` are the classes with the responsibility to provide access to the received request itself and to build the given response. The main advantage of these two classes are that they are able to fully isolate the surrounding network interface that received the request, so that the code keeps much more simple. One thing to notice is that the endpoint does not need to necessarily return any value because there are some cases in which has no sense from the business logic perspective. Also, it's important to notice that the `minos.networks.ResponseException` provides a way to notify that there was some kind of situation that does not allow resolve the request successfully.
+The `minos.networks.Request` and `minos.networks.Response` are the classes with the responsibility to provide access to the received request itself and to build the given response. The main advantage of these two classes are that they are able to fully isolate the surrounding network interface that received the request, so that the code keeps much more simple. One thing to notice is that the endpoint does not need to necessarily return any value because there are some cases in which has no sense from the business logic perspective. Also, it is important to notice that the `minos.networks.ResponseException` provides a way to notify that there was some kind of situation that does not allow resolve the request successfully.
 
 Now that the basic concepts to expose operations that can be used both by another microservices and also by external clients, the next step is to include some examples that help in the process to understand it better.   
 
@@ -109,7 +109,7 @@ class ExamCommandService(CommandService):
 
 ```
 
-In this case, the command is exposed both over the *REST* and *Broker* interfaces. The way to extract the information from a `Request` instance is through its `content()` method, that in this case is assumed to be a `dict` instance containing the `subject` and `title` fields. The `return` value in this case is a `Response` instance, in which the content is composed of an `UUID` instance, but another composed options would have been possible. To know more about that, it's recommended to visit [TODO: link to Request/Response architecture section].  
+In this case, the command is exposed both over the *REST* and *Broker* interfaces. The way to extract the information from a `Request` instance is through its `content()` method, that in this case is assumed to be a `dict` instance containing the `subject` and `title` fields. The `return` value in this case is a `Response` instance, in which the content is composed of an `UUID` instance, but another composed options would have been possible. To know more about that, it is recommended to visit [TODO: link to Request/Response architecture section].  
 
 ## Adding `Exam` questions!
 
@@ -182,7 +182,7 @@ The interesting part of this handling method is that it does not return any `Res
 
 ## Deleting `Exam` by events...
 
-The `Exam` aggregate contains a `ModelRef` to an external `Subject` aggregate, that it's assumed that is defined into another microservice. In classic monolithic systems that uses relational database schemas, a `ON DELETE` statement defines how instances with references will behave after a deletion of the referred instance. As `minos` follows the event driven ideas, it's also possible to perform operations after an event is published. So, a common use case of that could be to implement the `ON DELETE CASCADE` strategy between `Exam` and `Subject`: 
+The `Exam` aggregate contains a `ModelRef` to an external `Subject` aggregate, that it is assumed that is defined into another microservice. In classic monolithic systems that uses relational database schemas, a `ON DELETE` statement defines how instances with references will behave after a deletion of the referred instance. As `minos` follows the event driven ideas, it is also possible to perform operations after an event is published. So, a common use case of that could be to implement the `ON DELETE CASCADE` strategy between `Exam` and `Subject`: 
 
 ```python
 from minos.common import (
@@ -208,13 +208,13 @@ class ExamCommandService(CommandService):
             await exam.delete()
 ```
 
-One of the main advantages of an event based implementation is that it's very easy to understand and implement. Also, it keeps the dependencies on the right direction and improves isolation of each component in the system. [TODO: Tell the saga based alternative.]  
+One of the main advantages of an event based implementation is that it is very easy to understand and implement. Also, it keeps the dependencies on the right direction and improves isolation of each component in the system. [TODO: Tell the saga based alternative.]  
 
 ## Why not to implement `get` operations as commands?
 
 The queries (or get operations) are a special kind of operations characterised by the absence of side effects. As the `minos` framework follow the [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern, it is highly recommended not to implement `get` operations to be resolved by the `CommandService` because its responsibility must be to define operations that change the internal `Aggregate` instances in some sense. 
 
-By cons, the `QueryService` must not use the `Aggregate` class directly, so it cannot change its state, but it's able to know that state through the domain events given as `AggregateDiff` instances. In this way, the `QueryService` is able to have a custom internal representation of the `Aggregate` oriented to the queries that it implements, being easier to have big performance advantages. A more detailed explanation can be seen in :doc:`/quickstart/query`.
+By cons, the `QueryService` must not use the `Aggregate` class directly, so it cannot change its state, but it is able to know that state through the domain events given as `AggregateDiff` instances. In this way, the `QueryService` is able to have a custom internal representation of the `Aggregate` oriented to the queries that it implements, being easier to have big performance advantages. A more detailed explanation can be seen in :doc:`/quickstart/query`.
 
 ## Summary
 
